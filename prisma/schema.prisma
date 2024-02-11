@@ -1,0 +1,485 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Athlete {
+  id                BigInt       @id @default(autoincrement())
+  person            Person       @relation(fields: [personId], references: [id])
+  team              Team?        @relation(fields: [teamId], references: [id])
+  createdAt         DateTime     @default(now())
+  createdBy         User         @relation(fields: [createdById], references: [id])
+  updatedAt         DateTime     @updatedAt
+  updatedBy         User         @relation(fields: [updatedById], references: [id])
+
+  personId          BigInt
+  teamId            BigInt?
+  createdById       BigInt
+  updatedById       BigInt
+}
+
+model AthleteToEvent {
+  id                BigInt       @id @default(autoincrement())
+  athlete           Athlete      @relation(fields: [athleteId], references: [id])
+  event             Event        @relation(fields: [eventId], references: [id])
+  createdAt         DateTime     @default(now())
+  createdBy         User         @relation(fields: [createdById], references: [id])
+  updatedAt         DateTime     @updatedAt
+  updatedBy         User         @relation(fields: [updatedById], references: [id])
+
+  athleteId         BigInt
+  eventId           BigInt
+  createdById       BigInt
+  updatedById       BigInt
+}
+
+model Challenge {
+  id                BigInt       @id @default(autoincrement())
+  name              String
+  createdAt         DateTime     @default(now())
+  createdBy         User         @relation(fields: [createdById], references: [id])
+  updatedAt         DateTime     @updatedAt
+  updatedBy         User         @relation(fields: [updatedById], references: [id])
+
+  createdById       BigInt
+  updatedById       BigInt
+}
+
+model City {
+  id                BigInt       @id @default(autoincrement())
+  name              String
+  country           Country      @relation(fields: [countryId], references: [id])
+  createdAt         DateTime     @default(now())
+  createdBy         User         @relation(fields: [createdById], references: [id])
+  updatedAt         DateTime     @updatedAt
+  updatedBy         User         @relation(fields: [updatedById], references: [id])
+
+  countryId         BigInt
+  createdById       BigInt
+  updatedById       BigInt
+}
+
+model Color {
+  id                BigInt       @id @default(autoincrement())
+  name              String
+  hex               String
+  createdAt         DateTime     @default(now())
+  createdBy         User         @relation(fields: [createdById], references: [id])
+  updatedAt         DateTime     @updatedAt
+  updatedBy         User         @relation(fields: [updatedById], references: [id])
+
+  createdById       BigInt
+  updatedById       BigInt
+}
+
+model Country {
+  id                BigInt       @id @default(autoincrement())
+  name              String
+  createdAt         DateTime     @default(now())
+  createdBy         User         @relation(fields: [createdById], references: [id])
+  updatedAt         DateTime     @updatedAt
+  updatedBy         User         @relation(fields: [updatedById], references: [id])
+
+  createdById       BigInt
+  updatedById       BigInt
+}
+
+model Event {
+  id                BigInt       @id @default(autoincrement())
+  date              DateTime
+  facility          Facility     @relation(fields: [facilityId], references: [id])
+  team1             Team?        @relation(fields: [team1Id], references: [id])
+  team2             Team?        @relation(fields: [team2Id], references: [id])
+  result            String?
+  attendance        Int?
+  sport             Sport        @relation(fields: [sportId], references: [id])
+  winner            Athlete?     @relation(fields: [winnerId], references: [id])
+  isDerby           Boolean?
+  createdAt         DateTime     @default(now())
+  createdBy         User         @relation(fields: [createdById], references: [id])
+  updatedAt         DateTime     @updatedAt
+  updatedBy         User         @relation(fields: [updatedById], references: [id])
+
+  facilityId        BigInt
+  team1Id           BigInt?
+  team2Id           BigInt?
+  sportId           BigInt
+  winnerId          BigInt?
+  createdById       BigInt
+  updatedById       BigInt
+}
+
+model Facility {
+  id                BigInt       @id @default(autoincrement())
+  capacity          Int
+  location          Location     @relation(fields: [locationId], references: [id])
+  name              String
+  build_years       String
+  coordinates       String
+  description       String
+  stands            Stand?       @relation(fields: [standsId], references: [id])
+  createdAt         DateTime     @default(now())
+  createdBy         User         @relation(fields: [createdById], references: [id])
+  updatedAt         DateTime     @updatedAt
+  updatedBy         User         @relation(fields: [updatedById], references: [id])
+
+  locationId        BigInt
+  standsId          BigInt?
+  createdById       BigInt
+  updatedById       BigInt
+}
+
+model Gadget {
+  id                BigInt       @id @default(autoincrement())
+  gadgetType        GadgetType   @relation(fields: [gadgetTypeId], references: [id])
+  team              Team?        @relation(fields: [teamId], references: [id])
+  createdAt         DateTime     @default(now())
+  createdBy         User         @relation(fields: [createdById], references: [id])
+  updatedAt         DateTime     @updatedAt
+  updatedBy         User         @relation(fields: [updatedById], references: [id])
+
+  gadgetTypeId      BigInt
+  teamId            BigInt?
+  createdById       BigInt
+  updatedById       BigInt
+}
+
+model GadgetType {
+  id                BigInt       @id @default(autoincrement())
+  name              String
+  createdAt         DateTime     @default(now())
+  createdBy         User         @relation(fields: [createdById], references: [id])
+  updatedAt         DateTime     @updatedAt
+  updatedBy         User         @relation(fields: [updatedById], references: [id])
+
+  createdById       BigInt
+  updatedById       BigInt
+}
+
+model Image {
+  id                BigInt       @id @default(autoincrement())
+  name              String
+  url               String
+  createdAt         DateTime     @default(now())
+  createdBy         User         @relation(fields: [createdById], references: [id])
+  updatedAt         DateTime     @updatedAt
+  updatedBy         User         @relation(fields: [updatedById], references: [id])
+
+  createdById       BigInt
+  updatedById       BigInt
+}
+
+model ImageToEvent {
+  id                BigInt       @id @default(autoincrement())
+  image             Image        @relation(fields: [imageId], references: [id])
+  event             Event        @relation(fields: [eventId], references: [id])
+  createdAt         DateTime     @default(now())
+  createdBy         User         @relation(fields: [createdById], references: [id])
+  updatedAt         DateTime     @updatedAt
+  updatedBy         User         @relation(fields: [updatedById], references: [id])
+
+  imageId           BigInt
+  eventId           BigInt
+  createdById       BigInt
+  updatedById       BigInt
+}
+
+
+model ImageToFacility {
+  id                BigInt       @id @default(autoincrement())
+  image             Image        @relation(fields: [imageId], references: [id])
+  facility          Facility     @relation(fields: [facilityId], references: [id])
+  isIndoor          Boolean
+  isOutdoor         Boolean
+  createdAt         DateTime     @default(now())
+  createdBy         User         @relation(fields: [createdById], references: [id])
+  updatedAt         DateTime     @updatedAt
+  updatedBy         User         @relation(fields: [updatedById], references: [id])
+
+  imageId           BigInt
+  facilityId        BigInt
+  createdById       BigInt
+  updatedById       BigInt
+}
+
+model ImageToGadget {
+  id                BigInt       @id @default(autoincrement())
+  image             Image        @relation(fields: [imageId], references: [id])
+  gadget            Gadget       @relation(fields: [gadgetId], references: [id])
+  createdAt         DateTime     @default(now())
+  createdBy         User         @relation(fields: [createdById], references: [id])
+  updatedAt         DateTime     @updatedAt
+  updatedBy         User         @relation(fields: [updatedById], references: [id])
+
+
+  imageId           BigInt
+  gadgetId          BigInt
+  createdById       BigInt
+  updatedById       BigInt
+}
+
+
+model ImageToUser {
+  id                BigInt       @id @default(autoincrement())
+  image             Image        @relation(fields: [imageId], references: [id])
+  user              User         @relation(fields: [userId], references: [id])
+  createdAt         DateTime     @default(now())
+  createdBy         User         @relation(fields: [createdById], references: [id])
+  updatedAt         DateTime     @updatedAt
+  updatedBy         User         @relation(fields: [updatedById], references: [id])
+
+  imageId           BigInt
+  userId            BigInt
+  createdById       BigInt
+  updatedById       BigInt
+}
+
+
+
+model League {
+  id                BigInt       @id @default(autoincrement())
+  country           Country      @relation(fields: [countryId], references: [id])
+  sport             Sport        @relation(fields: [sportId], references: [id])
+  division          Int?
+  createdAt         DateTime     @default(now())
+  createdBy         User         @relation(fields: [createdById], references: [id])
+  updatedAt         DateTime     @updatedAt
+  updatedBy         User         @relation(fields: [updatedById], references: [id])
+
+  countryId         BigInt
+  sportId           BigInt
+  createdById       BigInt
+  updatedById       BigInt
+}
+
+model Location {
+  id                BigInt       @id @default(autoincrement())
+  city              City         @relation(fields: [cityId], references: [id])
+  street            String
+  number            String
+  zip_code          String?
+  createdAt         DateTime     @default(now())
+  createdBy         User         @relation(fields: [createdById], references: [id])
+  updatedAt         DateTime     @updatedAt
+  updatedBy         User         @relation(fields: [updatedById], references: [id])
+
+  cityId            BigInt
+  createdById       BigInt
+  updatedById       BigInt
+}
+
+model Log {
+  id                BigInt       @id @default(autoincrement())
+  module            Module       @relation(fields: [moduleId], references: [id])
+  description       String
+  createdAt         DateTime     @default(now())
+  createdBy         User         @relation(fields: [createdById], references: [id])
+  updatedAt         DateTime     @updatedAt
+  updatedBy         User         @relation(fields: [updatedById], references: [id])
+
+  moduleId          BigInt
+  createdById       BigInt
+  updatedById       BigInt
+}
+
+Table Market {
+  id                BigInt       @id @default(autoincrement())
+  createdAt         DateTime     @default(now())
+  createdBy         User         @relation(fields: [createdById], references: [id])
+  updatedAt         DateTime     @updatedAt
+  updatedBy         User         @relation(fields: [updatedById], references: [id])
+
+  createdById       BigInt
+  updatedById       BigInt
+}
+
+model Message {
+  id                BigInt       @id @default(autoincrement())
+  userToFriend      UserToFriend @relation(fields: [userToFriendId], references: [id])
+  author            User         @relation(fields: [authorId], references: [id])
+  content           String
+  createdAt         DateTime     @default(now())
+  createdBy         User         @relation(fields: [createdById], references: [id])
+  updatedAt         DateTime     @updatedAt
+  updatedBy         User         @relation(fields: [updatedById], references: [id])
+
+  userToFriendId    BigInt
+  authorId          BigInt
+  createdById       BigInt
+  updatedById       BigInt
+}
+
+
+model Module {
+  id                BigInt       @id @default(autoincrement())
+  name              String
+  createdAt         DateTime     @default(now())
+  createdBy         User         @relation(fields: [createdById], references: [id])
+  updatedAt         DateTime     @updatedAt
+  updatedBy         User         @relation(fields: [updatedById], references: [id])
+
+  createdById       BigInt
+  updatedById       BigInt
+}
+
+model Person {
+  id                BigInt       @id @default(autoincrement())
+  name              String?
+  last_name         String?
+  birth_date        DateTime?
+  nationality       Country      @relation(fields: [nationalityId], references: [id])
+  createdAt         DateTime     @default(now())
+  createdBy         User         @relation(fields: [createdById], references: [id])
+  updatedAt         DateTime     @updatedAt
+  updatedBy         User         @relation(fields: [updatedById], references: [id])
+
+  nationalityId     BigInt
+  createdById       BigInt
+  updatedById       BigInt
+}
+
+model Sport {
+  id                BigInt       @id @default(autoincrement())
+  name              String
+  isIndividual      Boolean
+  createdAt         DateTime     @default(now())
+  createdBy         User         @relation(fields: [createdById], references: [id])
+  updatedAt         DateTime     @updatedAt
+  updatedBy         User         @relation(fields: [updatedById], references: [id])
+
+  createdById       BigInt
+  updatedById       BigInt
+}
+
+model Team {
+  id                BigInt       @id @default(autoincrement())
+  name              String
+  coach             Person?      @relation(fields: [coachId], references: [id])
+  primary_color     Color        @relation(fields: [primaryColorId], references: [id])
+  secondary_color   Color        @relation(fields: [secondaryColorId], references: [id])
+  logo              Image        @relation(fields: [logoId], references: [id])
+  league            League       @relation(fields: [leagueId], references: [id])
+  createdAt         DateTime     @default(now())
+  createdBy         User         @relation(fields: [createdById], references: [id])
+  updatedAt         DateTime     @updatedAt
+  updatedBy         User         @relation(fields: [updatedById], references: [id])
+
+  coachId           BigInt
+  primaryColorId    BigInt
+  secondaryColorId  BigInt
+  logoId            BigInt
+  leagueId          BigInt
+  createdById       BigInt
+  updatedById       BigInt
+}
+
+model TourGroup {
+  id                BigInt       @id @default(autoincrement())
+  name              String
+  createdAt         DateTime     @default(now())
+  createdBy         User         @relation(fields: [createdById], references: [id])
+  updatedAt         DateTime     @updatedAt
+  updatedBy         User         @relation(fields: [updatedById], references: [id])
+
+  createdById       BigInt
+  updatedById       BigInt
+}
+
+model User {
+  id                BigInt       @id @default(autoincrement())
+  email             String       @unique
+  username          String
+  password          String
+  person            Person       @relation(fields: [personId], references: [id])
+  profile_image     Image?       @relation(fields: [profileImageId], references: [id])
+  background_image  Image?       @relation(fields: [backgroundImageId], references: [id])
+  favourite_team    Team?        @relation(fields: [favouriteTeamId], references: [id])
+  city              City?        @relation(fields: [cityId], references: [id])
+  primary_color     Color?       @relation(fields: [primaryColorId], references: [id])
+  secondary_color   Color?       @relation(fields: [secondaryColorId], references: [id])
+  createdAt         DateTime     @default(now())
+  createdBy         User         @relation(fields: [createdById], references: [id])
+  updatedAt         DateTime     @updatedAt
+  updatedBy         User         @relation(fields: [updatedById], references: [id])
+
+  personId          BigInt
+  profileImageId    BigInt?
+  backgroundImageId BigInt?
+  favouriteTeamId   BigInt?
+  cityId            BigInt?
+  primaryColorId    BigInt?
+  secondaryColorId  BigInt?
+  createdById       BigInt
+  updatedById       BigInt
+}
+
+model UserToEvent {
+  id                BigInt       @id @default(autoincrement())
+  user              User         @relation(fields: [userId], references: [id])
+  event             Event        @relation(fields: [eventId], references: [id])
+  tour_group        TourGroup?   @relation(fields: [tourGroupId], references: [id])
+  sports_rate       Int?
+  atmosphere_rate   Int?
+  createdAt         DateTime     @default(now())
+  createdBy         User         @relation(fields: [createdById], references: [id])
+  updatedAt         DateTime     @updatedAt
+  updatedBy         User         @relation(fields: [updatedById], references: [id])
+
+  userId            BigInt
+  eventId           BigInt
+  tourGroupId       BigInt?
+  createdById       BigInt
+  updatedById       BigInt
+}
+
+model UserToFacility {
+  id                BigInt       @id @default(autoincrement())
+  user              User         @relation(fields: [userId], references: [id])
+  facility          Facility     @relation(fields: [facilityId], references: [id])
+  first_visit       DateTime?
+  createdAt         DateTime     @default(now())
+  createdBy         User         @relation(fields: [createdById], references: [id])
+  updatedAt         DateTime     @updatedAt
+  updatedBy         User         @relation(fields: [updatedById], references: [id])
+
+  userId            BigInt
+  facilityId        BigInt
+  createdById       BigInt
+  updatedById       BigInt
+}
+
+model UserToFriend {
+  id                BigInt       @id @default(autoincrement())
+  invitingUser      User         @relation("InvitingUser", fields: [invitingUserId], references: [id])
+  recipentUser      User         @relation("RecipentUser", fields: [recipentUserId], references: [id])
+  openInvitation    Boolean
+  invitationAccepted Boolean
+
+  invitingUserId    BigInt
+  recipentUserId    BigInt
+
+  @@unique([invitingUserId, recipentUserId], name: "unique_user_to_friend")
+}
+
+model UserToGadget {
+  id                BigInt       @id @default(autoincrement())
+  user              User         @relation(fields: [userId], references: [id])
+  gadget            Gadget       @relation(fields: [gadgetId], references: [id])
+  name              String?
+  description       String?
+  createdAt         DateTime     @default(now())
+  createdBy         User         @relation(fields: [createdById], references: [id])
+  updatedAt         DateTime     @updatedAt
+  updatedBy         User         @relation(fields: [updatedById], references: [id])
+
+  userId            BigInt
+  gadgetId          BigInt
+  createdById       BigInt
+  updatedById       BigInt
+}
+
+
