@@ -6,9 +6,14 @@ const config: Config = {
         "./components/**/*.{js,ts,jsx,tsx,mdx}",
         "./app/**/*.{js,ts,jsx,tsx,mdx}",
     ],
+    important: "#__next", // Jeżeli zrezygnuję z MUI na rzecz własnego design systemu z Tailwindem, to pola 'important', 'prefix' i 'corePlugins' do usunięcia
+    prefix: "th-",
     theme: {
         extend: {},
     },
     plugins: [],
+    corePlugins: {
+        preflight: false,
+    },
 };
 export default config;
