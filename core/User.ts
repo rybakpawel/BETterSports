@@ -93,15 +93,18 @@ export async function getUser(whereClause: IUserWhereClause) {
     }
 }
 
-// export async function getAllUsers() {
-//     try {
-//         const records = await prisma.user.findMany({});
+export async function getGlobalHeaderDataByUserId(userId: bigint) {
+    try {
+        const record = await prisma.user.findUnique({
+            where: { id: userId },
+            include: { profileImage: true },
+        });
 
-//         return { records };
-//     } catch (error) {
-//         console.error(error);
-//     }
-// }
+        return record;
+    } catch (error) {
+        console.error(error);
+    }
+}
 
 // 1 usage
 export async function createUser(user: Partial<IUser>) {
@@ -134,18 +137,6 @@ export async function updateUser(
         console.error(error);
     }
 }
-
-// export async function deleteUser(id: number) {
-//     try {
-//         await prisma.user.delete({
-//             where: {
-//                 id,
-//             },
-//         });
-//     } catch (error) {
-//         console.error(error);
-//     }
-// }
 
 // 1 usage
 export async function validateExistingUser(

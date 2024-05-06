@@ -232,7 +232,10 @@ export default function SignIn() {
                     aria-describedby="modal-modal-description"
                     sx={{
                         mx: "auto",
-                        width: "20vw",
+                        width: {
+                            xs: "50vw",
+                            md: "30vw",
+                        },
                         display: "flex",
                         justifyContent: "center",
                         alignItems: "center",

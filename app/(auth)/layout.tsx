@@ -22,7 +22,12 @@ export default function RootLayout({
                     <CssBaseline />
                     <body>
                         <Grid container>
-                            <Grid item xs={8}>
+                            <Grid
+                                item
+                                xs={0}
+                                sm={8}
+                                sx={{ display: { xs: "none", md: "block" } }}
+                            >
                                 <Container
                                     sx={{
                                         width: "100%",
@@ -53,7 +58,13 @@ export default function RootLayout({
                                     ></Image>
                                 </Container>
                             </Grid>
-                            <Grid item xs={3}>
+
+                            <Grid
+                                item
+                                xs={8}
+                                md={3}
+                                sx={{ mx: { xs: "auto" } }}
+                            >
                                 {children}
                             </Grid>
                         </Grid>

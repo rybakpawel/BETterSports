@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "../api/auth/[...nextauth]/route";
 import { AuthProvider } from "@/components/AuthProvider";
 import { ThemeProvider } from "@mui/material";
+import GlobalHeader from "@/components/GlobalHeader";
 import AccountNotActive from "@/components/AccountNotActive";
 import theme from "@/styles/theme";
 import CssBaseline from "@mui/material/CssBaseline";
@@ -24,7 +25,7 @@ export default async function RootLayout({
                 <ThemeProvider theme={theme}>
                     <CssBaseline />
                     <body>
-                        <div>{`Witaj ${session?.user?.username}`}</div>
+                        <GlobalHeader userId={session?.user.id}></GlobalHeader>
                         {session?.user.isActive ? (
                             children
                         ) : (

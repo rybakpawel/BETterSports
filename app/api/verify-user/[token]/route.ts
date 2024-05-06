@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { activateUser } from "@/actions/business/activateUser";
 import { getActivateToken } from "@/core/ActivateToken";
 import { IUserUpdate, updateUser } from "@/core/User";
 import {
