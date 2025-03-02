@@ -12,7 +12,7 @@ export async function GET(
         // Log operation
 
         const { id } = params;
-        const userId = BigInt(id);
+        const userId = Number(id);
 
         // Validation
         if (!userId)
@@ -41,7 +41,7 @@ export async function GET(
 
         const { error } = await resend.emails.send({
             from: "onboarding@resend.dev", // do skonfigurowania gdy już będzie hosting
-            to: [user?.record?.email as string],
+            to: [user?.email as string],
             subject: "Weryfikacja konta BETter",
             react: VerifyUser({
                 activateToken: token?.record?.token,

@@ -2,10 +2,10 @@ import "./globals.css";
 import type { Metadata } from "next";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../api/auth/[...nextauth]/route";
-import { AuthProvider } from "@/components/AuthProvider";
+import { AuthProvider } from "@/components/sections/AuthProvider";
 import { ThemeProvider } from "@mui/material";
-import GlobalHeader from "@/components/GlobalHeader";
-import AccountNotActive from "@/components/AccountNotActive";
+import GlobalHeader from "@/components/sections/GlobalHeader";
+import AccountNotActive from "@/components/sections/AccountNotActive";
 import theme from "@/styles/theme";
 import CssBaseline from "@mui/material/CssBaseline";
 

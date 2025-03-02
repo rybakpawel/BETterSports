@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getGlobalHeaderDataByUserId } from "@/core/User";
+import { getUser } from "@/core/User";
 
 export async function GET(
     res: NextResponse,
@@ -20,10 +20,9 @@ export async function GET(
         }
 
         // Technical actions
-        const user = await getGlobalHeaderDataByUserId(BigInt(id));
+        const user = await getUser({ id: Number(id) }, { profileImage: true });
 
         // Rest of logic
-
         return NextResponse.json({
             message: "",
             res: {

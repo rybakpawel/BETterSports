@@ -1,81 +1,53 @@
 import prisma from "@/prisma";
 
-interface Team {
+export interface ITeam {
     id: number;
     name: string;
-    coachId: number;
-    primaryColorId: number;
-    secondaryColorId: number;
-    logoId: number;
-    leagueId: number;
+    coach: number | connect;
+    primaryColor: string | connect;
+    secondaryColor: string | connect;
+    tertiaryColor: string | connect;
+    logo: number | connect;
+    league: number | connect;
     createdAt: Date;
-    createdById: number;
+    createdBy: number | connect;
     updatedAt: Date;
-    updatedById: number;
+    updatedBy: number | connect;
 }
 
-export async function getTeam(id: number) {
+type connect = {
+    connect: {
+        id: number;
+    };
+};
+
+// 1 usage
+export async function getTeamsByInput(input: string) {
     try {
-        let record: Team;
-        record = await prisma.team.findUnique({
+        const records = await prisma.team.findMany({
             where: {
-                id,
+                name: {
+                    startsWith: input,
+                    mode: "insensitive",
+                },
             },
+            orderBy: { name: "asc" },
         });
 
-        return { record };
+        return records;
     } catch (error) {
         console.error(error);
     }
 }
 
-export async function getAllTeams() {
+// ! do użycia przy tworzeniu nowej drużyny w ustawieniach
+export async function createTeam(team: Partial<ITeam>) {
     try {
-        let records: Team[];
-        records = await prisma.team.findMany({});
-
-        return { records };
-    } catch (error) {
-        console.error(error);
-    }
-}
-
-export async function createTeam(team: Team) {
-    try {
-        let record: Team;
-        record = await prisma.team.create({
+        const record = await prisma.team.create({
             data: team,
         });
 
         return { record };
-    } catch (error) {
-        console.error(error);
-    }
-}
-
-export async function updateTeam(id: number, updatedData: Partial<Team>) {
-    try {
-        let record: Team;
-        record = await prisma.team.update({
-            where: {
-                id,
-            },
-            data: updatedData,
-        });
-
-        return { record };
-    } catch (error) {
-        console.error(error);
-    }
-}
-
-export async function deleteTeam(id: number) {
-    try {
-        await prisma.team.delete({
-            where: {
-                id,
-            },
-        });
     } catch (error) {
         console.error(error);
     }

@@ -1,45 +1,25 @@
 import prisma from "@/prisma";
 
-interface Image {
+export interface IImage {
     id: number;
     name: string;
     url: string;
     createdAt: Date;
-    createdById: number;
+    createdBy: number | connect;
     updatedAt: Date;
-    updatedById: number;
+    updatedBy: number | connect;
 }
 
-export async function getImage(id: number) {
+type connect = {
+    connect: {
+        id: number;
+    };
+};
+
+// 1 usage
+export async function createImage(image: Partial<IImage>) {
     try {
-        let record: Image;
-        record = await prisma.image.findUnique({
-            where: {
-                id,
-            },
-        });
-
-        return { record };
-    } catch (error) {
-        console.error(error);
-    }
-}
-
-export async function getAllImages() {
-    try {
-        let records: Image[];
-        records = await prisma.image.findMany({});
-
-        return { records };
-    } catch (error) {
-        console.error(error);
-    }
-}
-
-export async function createImage(image: Image) {
-    try {
-        let record: Image;
-        record = await prisma.image.create({
+        const record = await prisma.image.create({
             data: image,
         });
 
@@ -49,29 +29,16 @@ export async function createImage(image: Image) {
     }
 }
 
-export async function updateImage(id: number, updatedData: Partial<Image>) {
-    try {
-        let record: Image;
-        record = await prisma.image.update({
-            where: {
-                id,
-            },
-            data: updatedData,
-        });
-
-        return { record };
-    } catch (error) {
-        console.error(error);
-    }
-}
-
-export async function deleteImage(id: number) {
+// 1 usage
+export async function deleteImage(imageId: number) {
     try {
         await prisma.image.delete({
-            where: {
-                id,
-            },
+            where: { id: imageId },
         });
+
+        console.log(
+            `Obraz o ID ${imageId} został usunięty, a powiązane pola w User ustawione na NULL.`
+        );
     } catch (error) {
         console.error(error);
     }

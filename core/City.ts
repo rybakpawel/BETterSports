@@ -1,77 +1,48 @@
 import prisma from "@/prisma";
 
-interface City {
+export interface ICity {
     id: number;
     name: string;
-    countryId: number;
+    country: number | connect;
     createdAt: Date;
-    createdById: number;
+    createdBy: number | connect;
     updatedAt: Date;
-    updatedById: number;
+    updatedBy: number | connect;
 }
 
-export async function getCity(id: number) {
+type connect = {
+    connect: {
+        id: number;
+    };
+};
+
+// 1 usage
+export async function getCitiesByInput(input: string) {
     try {
-        let record: City;
-        record = await prisma.city.findUnique({
+        const records = await prisma.city.findMany({
             where: {
-                id,
+                name: {
+                    startsWith: input,
+                    mode: "insensitive",
+                },
             },
+            orderBy: { name: "asc" },
         });
 
-        return { record };
+        return records;
     } catch (error) {
         console.error(error);
     }
 }
 
-export async function getAllCities() {
+// 1 usage
+export async function createCity(city: Partial<ICity>) {
     try {
-        let records: City[];
-        records = await prisma.city.findMany({});
-
-        return { records };
-    } catch (error) {
-        console.error(error);
-    }
-}
-
-export async function createCity(city: City) {
-    try {
-        let record: City;
-        record = await prisma.city.create({
+        const record = await prisma.city.create({
             data: city,
         });
 
         return { record };
-    } catch (error) {
-        console.error(error);
-    }
-}
-
-export async function updateCity(id: number, updatedData: Partial<City>) {
-    try {
-        let record: City;
-        record = await prisma.city.update({
-            where: {
-                id,
-            },
-            data: updatedData,
-        });
-
-        return { record };
-    } catch (error) {
-        console.error(error);
-    }
-}
-
-export async function deleteCity(id: number) {
-    try {
-        await prisma.city.delete({
-            where: {
-                id,
-            },
-        });
     } catch (error) {
         console.error(error);
     }

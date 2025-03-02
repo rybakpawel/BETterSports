@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { IUser } from "@/core/User";
-import { createUserValidation } from "@/validation/createUserValidation";
-import { hash } from "bcrypt";
+import { createUserServerValidation } from "@/validation/server/createUserServerValidation";
+import { hash } from "bcryptjs";
 import { createUser } from "@/core/User";
 import { IActivateToken, createActivateToken } from "@/core/ActivateToken";
 import { v4 as uuidv4 } from "uuid";
@@ -14,7 +14,7 @@ export async function POST(req: Request) {
         const body: IUser = await req.json();
 
         // Validation
-        const validationError = await createUserValidation(
+        const validationError = await createUserServerValidation(
             body.email,
             body.username
         );
@@ -44,19 +44,19 @@ export async function POST(req: Request) {
             token: uuidv4(),
             user: {
                 connect: {
-                    id: newUser?.record.id as bigint,
+                    id: newUser?.record.id as number,
                 },
             },
             createdAt: new Date(),
             createdBy: {
                 connect: {
-                    id: newUser?.record.id as bigint,
+                    id: newUser?.record.id as number,
                 },
             },
             updatedAt: new Date(),
             updatedBy: {
                 connect: {
-                    id: newUser?.record.id as bigint,
+                    id: newUser?.record.id as number,
                 },
             },
         };

@@ -1,7 +1,7 @@
 import NextAuth, { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { getUser } from "@/core/User";
-import { compare } from "bcrypt";
+import { compare } from "bcryptjs";
 
 export const authOptions: NextAuthOptions = {
     session: {
@@ -31,15 +31,19 @@ export const authOptions: NextAuthOptions = {
 
                 const userRecord = await getUser({ email });
 
-                if (!userRecord?.record) {
+                if (!userRecord) {
                     // res.error = "Nie znaleziono użytkownika z podanym adresem e-mail."; // do obsłużenia podczas systemu logowania i błędów, stworzyć funkcję w folderze Validation
+                    return null;
+                }
+
+                if (!userRecord.isActive) {
                     return null;
                 }
 
                 // Technical actions
 
                 // Rest of logic
-                const hashedPassword = userRecord?.record?.password as string;
+                const hashedPassword = userRecord?.password as string;
 
                 const correctPassword = await new Promise((resolve, reject) => {
                     compare(password, hashedPassword, function (err, result) {
@@ -57,10 +61,10 @@ export const authOptions: NextAuthOptions = {
                 }
 
                 const user = {
-                    id: userRecord.record?.id.toString() as string,
+                    id: userRecord.id.toString() as string,
                     email,
-                    username: userRecord.record?.username,
-                    isActive: userRecord.record?.isActive,
+                    username: userRecord.username,
+                    isActive: userRecord.isActive,
                 };
                 return user;
             },

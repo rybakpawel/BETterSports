@@ -1,28 +1,28 @@
 import prisma from "@/prisma";
 
 export interface IResetPasswordToken {
-    id: bigint;
+    id: number;
     token: string;
-    user: bigint | connectUser;
+    user: number | connectUser;
     createdAt: Date;
-    createdBy: bigint | connectUser;
+    createdBy: number | connectUser;
     updatedAt: Date;
-    updatedBy: bigint | connectUser;
+    updatedBy: number | connectUser;
 }
 
 export interface IResetPasswordTokenWhereClause {
-    id?: bigint;
+    id?: number;
     token?: string;
-    userId?: bigint;
+    userId?: number;
     createdAt?: Date;
-    createdById?: bigint;
+    createdById?: number;
     updatedAt?: Date;
-    updatedById?: bigint;
+    updatedById?: number;
 }
 
 type connectUser = {
     connect: {
-        id: bigint;
+        id: number;
     };
 };
 
@@ -55,15 +55,3 @@ export async function createResetPasswordToken(
         console.error(error);
     }
 }
-
-// export async function deleteResetPasswordToken(id: number) {
-//     try {
-//         await prisma.resetPasswordToken.delete({
-//             where: {
-//                 id,
-//             },
-//         });
-//     } catch (error) {
-//         console.error(error);
-//     }
-// }

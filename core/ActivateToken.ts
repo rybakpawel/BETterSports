@@ -1,41 +1,41 @@
 import prisma from "@/prisma";
 
 export interface IActivateToken {
-    id: bigint;
+    id: number;
     token: string;
-    user: bigint | connectUser;
+    user: number | connectUser;
     activatedAt: Date;
     createdAt: Date;
-    createdBy: bigint | connectUser;
+    createdBy: number | connectUser;
     updatedAt: Date;
-    updatedBy: bigint | connectUser;
+    updatedBy: number | connectUser;
 }
 
 export interface IActivateTokenWhereClause {
-    id?: bigint;
+    id?: number;
     token?: string;
-    userId?: bigint;
+    userId?: number;
     activatedAt?: Date;
     createdAt?: Date;
-    createdById?: bigint;
+    createdById?: number;
     updatedAt?: Date;
-    updatedById?: bigint;
+    updatedById?: number;
 }
 
 export interface IActivateTokenUpdate {
-    id: bigint;
+    id: number;
     token: string;
-    userId: { connect: { id: bigint } };
+    userId: { connect: { id: number } };
     activatedAt: Date;
     createdAt: Date;
-    createdBy: { connect: { id: bigint } };
+    createdBy: { connect: { id: number } };
     updatedAt: Date;
-    updatedBy: { connect: { id: bigint } };
+    updatedBy: { connect: { id: number } };
 }
 
 type connectUser = {
     connect: {
-        id: bigint;
+        id: number;
     };
 };
 
@@ -51,17 +51,6 @@ export async function getActivateToken(whereClause: IActivateTokenWhereClause) {
         console.error(error);
     }
 }
-
-// export async function getAllActivateTokens() {
-//     try {
-//         let records: IActivateToken[];
-//         records = await prisma.activateToken.findMany({});
-
-//         return { records };
-//     } catch (error) {
-//         console.error(error);
-//     }
-// }
 
 // 1 usage
 export async function createActivateToken(
@@ -80,7 +69,7 @@ export async function createActivateToken(
 
 // 1 usage
 export async function updateActivateToken(
-    id: bigint,
+    id: number,
     updatedData: Partial<IActivateTokenUpdate>
 ) {
     try {
@@ -96,15 +85,3 @@ export async function updateActivateToken(
         console.error(error);
     }
 }
-
-// export async function deleteActivateToken(id: number) {
-//     try {
-//         await prisma.activateToken.delete({
-//             where: {
-//                 id,
-//             },
-//         });
-//     } catch (error) {
-//         console.error(error);
-//     }
-// }

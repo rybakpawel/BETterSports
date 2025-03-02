@@ -1,106 +1,142 @@
 import prisma from "@/prisma";
-import { PersonKey } from "./Person";
+import { PersonKey, IPersonUpdate } from "./Person";
 
 export interface IUser {
-    id: bigint;
+    id: number;
     email: string;
     username: string;
     password: string;
-    person: bigint | createPerson;
-    profileImage: bigint;
-    backgroundImage: bigint;
-    favouriteTeam: bigint;
-    city: bigint;
-    primaryColor: bigint;
-    secondaryColor: bigint;
+    person: number | createPerson;
+    profileImage: number;
+    backgroundImage: number;
+    favouriteSport: number;
+    favouriteTeam: number;
+    city: number;
+    primaryColor: string;
+    secondaryColor: string;
     isActive: boolean;
     createdAt: Date;
-    createdBy: bigint;
+    createdBy: number;
     updatedAt: Date;
-    updatedBy: bigint;
+    updatedBy: number;
 }
 
 export interface UserKey {
-    id?: bigint;
+    id?: number;
     email?: string;
     username?: string;
     password?: string;
-    person?: bigint | createPerson;
-    profileImage?: bigint;
-    backgroundImage?: bigint;
-    favouriteTeam?: bigint;
-    city?: bigint;
-    primaryColor?: bigint;
-    secondaryColor?: bigint;
+    person?: number | createPerson;
+    profileImage?: number;
+    backgroundImage?: number;
+    favouriteSport?: number;
+    favouriteTeam?: number;
+    city?: number;
+    primaryColor?: string;
+    secondaryColor?: string;
     isActive?: boolean;
     createdAt?: Date;
-    createdBy?: bigint;
+    createdBy?: number;
     updatedAt?: Date;
-    updatedBy?: bigint;
+    updatedBy?: number;
 }
 
 export interface IUserWhereClause {
-    id?: bigint;
+    id?: number;
     email?: string;
     username?: string;
     password?: string;
-    personId?: bigint;
-    profileImageId?: bigint;
-    backgroundImageId?: bigint;
-    favouriteTeamId?: bigint;
-    cityId?: bigint;
-    primaryColorId?: bigint;
-    secondaryColorId?: bigint;
+    personId?: number;
+    profileImageId?: number;
+    backgroundImageId?: number;
+    favouriteSportId?: number;
+    favouriteTeamId?: number;
+    cityId?: number;
+    primaryColor?: string;
+    secondaryColor?: string;
     isActive?: boolean;
     createdAt?: Date;
-    createdById?: bigint;
+    createdById?: number;
     updatedAt?: Date;
-    updatedById?: bigint;
+    updatedById?: number;
 }
 
 export interface IUserUpdate {
-    id: bigint;
-    email: string;
-    username: string;
-    password: string;
-    person: { connect: { id: bigint } };
-    profileImage: { connect: { id: bigint } };
-    backgroundImage: { connect: { id: bigint } };
-    favouriteTeam: { connect: { id: bigint } };
-    city: { connect: { id: bigint } };
-    primaryColor: { connect: { id: bigint } };
-    secondaryColor: { connect: { id: bigint } };
-    isActive: boolean;
-    createdAt: Date;
-    createdBy: { connect: { id: bigint } };
+    id: number;
+    email?: string;
+    username?: string;
+    password?: string;
+    personId?: number | null;
+    profileImageId?: number | null;
+    backgroundImageId?: number | null;
+    favouriteSportId?: number | null;
+    favouriteTeamId?: number | null;
+    cityId?: number | null;
+    primaryColor?: string | null;
+    secondaryColor?: string | null;
+    isActive?: boolean;
+    createdAt?: Date;
+    createdById?: number | null;
     updatedAt: Date;
-    updatedBy: { connect: { id: bigint } };
+    updatedById: number | null;
 }
 
 type createPerson = {
     create: PersonKey;
 };
 
-export async function getUser(whereClause: IUserWhereClause) {
+export async function getUser(
+    whereClause: IUserWhereClause,
+    includeOptions?: Partial<Record<string, boolean>>
+) {
     try {
         const record = await prisma.user.findFirst({
             where: whereClause,
+            include: {
+                person: includeOptions?.person ?? false,
+                profileImage: includeOptions?.profileImage ?? false,
+                backgroundImage: includeOptions?.backgroundImage ?? false,
+                favouriteSport: includeOptions?.favouriteSport ?? false,
+                favouriteTeam: includeOptions?.favouriteTeam ?? false,
+                city: includeOptions?.city ?? false,
+            },
         });
 
-        return { record };
+        return record;
     } catch (error) {
         console.error(error);
     }
 }
 
-export async function getGlobalHeaderDataByUserId(userId: bigint) {
+// 1 usage
+export async function updateUserAndPersonByUserId(
+    userId: number,
+    userData: Partial<IUserUpdate>,
+    personData: Partial<IPersonUpdate>
+) {
     try {
-        const record = await prisma.user.findUnique({
-            where: { id: userId },
-            include: { profileImage: true },
-        });
+        const [updatedUser, updatedPerson] = await prisma.$transaction([
+            prisma.user.update({
+                where: { id: userId },
+                data: userData,
+            }),
+            prisma.person.update({
+                where: {
+                    id: (
+                        await prisma.user.findUnique({
+                            where: { id: userId },
+                            select: { personId: true },
+                        })
+                    )?.personId,
+                },
+                data: personData,
+            }),
+        ]);
 
-        return record;
+        console.log("User and Person updated successfully:", {
+            updatedUser,
+            updatedPerson,
+        }); // do poprawy przy obsłudze błędów (jak wszystkie funkcje tutaj)
     } catch (error) {
         console.error(error);
     }
@@ -119,9 +155,9 @@ export async function createUser(user: Partial<IUser>) {
     }
 }
 
-// 1 usage
+// 2 usages
 export async function updateUser(
-    id: bigint,
+    id: number,
     updatedData: Partial<IUserUpdate>
 ) {
     try {

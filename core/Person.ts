@@ -1,91 +1,59 @@
+import { Gender } from "@prisma/client";
 import prisma from "@/prisma";
 
 export interface Person {
-    id: bigint;
+    id: number;
     name: string;
     lastName: string;
     birthDate: string;
-    nationalityId: bigint;
+    gender: string;
+    nationalityId: number;
     createdAt: Date;
-    createdById: bigint;
+    createdById: number;
     updatedAt: Date;
-    updatedById: bigint;
+    updatedById: number;
 }
 
 export interface PersonKey {
-    id?: bigint;
+    id?: number;
     name?: string;
     lastName?: string;
     birthDate?: Date;
-    nationality?: bigint;
-    athlete?: bigint;
-    team?: bigint;
+    gender?: string;
+    nationality?: number;
+    athlete?: number;
+    team?: number;
     createdAt?: Date;
-    createdBy?: bigint;
+    createdBy?: number;
     updatedAt?: Date;
-    updatedBy?: bigint;
+    updatedBy?: number;
 }
 
-export async function getPerson(id: number) {
-    try {
-        const record = await prisma.person.findUnique({
-            where: {
-                id,
-            },
-        });
-
-        return { record };
-    } catch (error) {
-        console.error(error);
-    }
+export interface IPersonUpdate {
+    id: number;
+    name?: string;
+    lastName?: string;
+    birthDate?: Date;
+    gender?: Gender;
+    nationalityId?: number | null;
+    athleteId?: number | null;
+    teamId?: number | null;
+    createdAt: Date;
+    createdById: number | null;
+    updatedAt: Date;
+    updatedById: number | null;
 }
 
-export async function getAllPerson() {
-    try {
-        const records = await prisma.person.findMany({});
-
-        return { records };
-    } catch (error) {
-        console.error(error);
-    }
-}
-
-export async function createPerson(
-    person: Partial<Person>
-): Promise<Person | undefined> {
-    try {
-        const record = await prisma.person.create({
-            data: person,
-        });
-
-        return record;
-    } catch (error) {
-        console.error(error);
-    }
-}
-
-export async function updatePerson(id: number, updatedData: Partial<Person>) {
-    try {
-        const record = await prisma.person.update({
-            where: {
-                id,
-            },
-            data: updatedData,
-        });
-
-        return { record };
-    } catch (error) {
-        console.error(error);
-    }
-}
-
-export async function deletePerson(id: number) {
+// nigdzie nie używane, zrobione przez pomyłkę, zostawione na później do wykorzystania
+export async function deletePerson(personId: number) {
     try {
         await prisma.person.delete({
-            where: {
-                id,
-            },
+            where: { id: personId },
         });
+
+        console.log(
+            `Rekord Person o ID ${personId} został usunięty, a powiązane pola w User ustawione na NULL.`
+        );
     } catch (error) {
         console.error(error);
     }

@@ -1,15 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getResetPasswordToken } from "@/core/ResetPasswordToken";
-import { hash } from "bcrypt";
-import { IUserUpdate, updateUser } from "@/core/User";
+import { compare, hash } from "bcryptjs";
+import { IUserUpdate, getUser, updateUser } from "@/core/User";
 
 export async function POST(req: NextRequest, res: NextResponse) {
     try {
         // Log operation
 
-        const { password, userId, token } = await req.json();
+        let { oldPassword, newPassword, userId, token } = await req.json();
 
-        if (!password)
+        if (!newPassword)
             return NextResponse.json({
                 message: "Brak nowego hasła.",
                 res: null,
@@ -23,7 +23,28 @@ export async function POST(req: NextRequest, res: NextResponse) {
 
         // Technical actions
         if (userId) {
-            console.log("userId"); // do uzupełnienia
+            if (!oldPassword)
+                return NextResponse.json({
+                    message: "Brak starego hasła.",
+                    res: null,
+                });
+
+            const user = await getUser({ id: Number(userId) });
+
+            if (user?.password) {
+                const isOldPasswordMatch = await compare(
+                    oldPassword,
+                    user.password
+                );
+
+                if (!isOldPasswordMatch) {
+                    return NextResponse.json({
+                        error: true,
+                        message: "Stare hasło się nie zgadza.",
+                        res: null,
+                    });
+                }
+            }
         } else if (token) {
             const resetPasswordToken = await getResetPasswordToken({ token });
 
@@ -33,23 +54,23 @@ export async function POST(req: NextRequest, res: NextResponse) {
                     res: null,
                 });
 
-            const hashedPassword = await hash(password, 10);
-
-            const user: Partial<IUserUpdate> = {
-                password: hashedPassword,
-                updatedAt: new Date(),
-                updatedBy: {
-                    connect: { id: resetPasswordToken.record.userId },
-                },
-            };
-
-            await updateUser(resetPasswordToken.record.userId, user);
-
-            return NextResponse.json({
-                message: "Hasło użytkownika zostało zmienione.",
-                res: null,
-            });
+            userId = resetPasswordToken.record.userId;
         }
+
+        const hashedPassword = await hash(newPassword, 10);
+
+        const user: Partial<IUserUpdate> = {
+            password: hashedPassword,
+            updatedAt: new Date(),
+            updatedById: Number(userId),
+        };
+
+        await updateUser(Number(userId), user);
+
+        return NextResponse.json({
+            message: "Hasło użytkownika zostało zmienione.",
+            res: null,
+        });
     } catch (error) {
         const errorMessage = (error as Error).message;
 

@@ -6,7 +6,6 @@ import { useParams, useRouter } from "next/navigation";
 import { z } from "zod";
 import {
     Box,
-    Button,
     Card,
     CardContent,
     FormControl,
@@ -17,6 +16,7 @@ import {
     OutlinedInput,
     Typography,
 } from "@mui/material";
+import { LoadingButton } from "@mui/lab";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 
 interface IResetPasswordForm {
@@ -97,7 +97,7 @@ export default function ResetPassword() {
         } else {
             const body = {
                 token: params.token,
-                password: resetPasswordForm.password,
+                newPassword: resetPasswordForm.password,
             };
 
             const response = await fetch(
@@ -261,15 +261,15 @@ export default function ResetPassword() {
                                 : ""}
                         </FormHelperText>
                     </FormControl>
-                    <Button
+                    <LoadingButton
                         type="submit"
                         fullWidth={true}
                         variant="contained"
-                        disabled={isLoading ? true : false}
+                        loading={isLoading}
                         sx={{ mb: 2 }}
                     >
                         Ustaw hasło
-                    </Button>
+                    </LoadingButton>
                 </Box>
             </CardContent>
         </Card>

@@ -37,7 +37,7 @@ export async function GET(
         const user: Partial<IUserUpdate> = {
             isActive: true,
             updatedAt: new Date(),
-            updatedBy: { connect: { id: activateToken.record.userId } },
+            updatedById: activateToken.record.userId,
         };
         await updateUser(activateToken.record.userId, user);
 

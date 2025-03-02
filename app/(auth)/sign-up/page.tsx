@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import { z } from "zod";
 import { useState } from "react";
+import { createUserClientValidation } from "@/validation/client/createUserClientValidation";
 import {
     Box,
     Button,
@@ -19,6 +19,7 @@ import {
     TextField,
     Typography,
 } from "@mui/material";
+import { LoadingButton } from "@mui/lab";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 
 interface ISignUpForm {
@@ -51,59 +52,14 @@ export default function SignUp() {
         e.preventDefault();
         setIsLoading(true);
 
-        // client validation - do przemyślenia czy nie przenieść walidacji klienckich do osobnego katalogu
-        const validationSchema = z
-            .object({
-                email: z
-                    .string()
-                    .email({ message: "Nieprawidłowy adres e-mail." }),
-                username: z
-                    .string()
-                    .min(2, {
-                        message:
-                            "Nazwa użytkownika musi zawierać co najmniej 2 znaki.",
-                    })
-                    .max(20, {
-                        message:
-                            "Nazwa użytkownika może zawierać maksymalnie 20 znaków.",
-                    })
-                    .regex(
-                        new RegExp(
-                            "^(?=.{2,20}$)(?![_.])(?!.*[_.]{2})[a-zA-Z0-9._]+(?<![_.])$"
-                        ),
-                        { message: "Nieprawidłowa nazwa użytkownika." }
-                    ),
-                password: z
-                    .string()
-                    .min(8, {
-                        message: "Hasło musi zawierać co najmniej 8 znaków.",
-                    })
-                    .regex(new RegExp(".*[A-Z].*"), {
-                        message: "Hasło musi zawierać wielką literę.",
-                    })
-                    .regex(new RegExp(".*\\d.*"), {
-                        message: "Hasło musi zawierać cyfrę.",
-                    })
-                    .regex(
-                        new RegExp(
-                            ".*[`~<>?,./!@#$%^&*()\\-_+=\"'|{}\\[\\];:\\\\].*"
-                        ),
-                        { message: "Hasło musi zawierać znak specjalny." }
-                    ),
-                confirmPassword: z
-                    .string()
-                    .min(1, { message: "Uzupełnij pole." }),
-            })
-            .superRefine(({ confirmPassword, password }, ctx) => {
-                if (confirmPassword !== password) {
-                    ctx.addIssue({
-                        code: "custom",
-                        path: ["confirmPassword"],
-                        message: "Hasła nie są takie same.",
-                    });
-                }
-            });
-        const validationResult = validationSchema.safeParse(signUpForm);
+        const { email, username, password, confirmPassword } = signUpForm;
+
+        const validationResult = createUserClientValidation(
+            email,
+            username,
+            password,
+            confirmPassword
+        );
 
         if (!validationResult.success) {
             let newErrors = {
@@ -213,9 +169,6 @@ export default function SignUp() {
                     >
                         <InputLabel
                             htmlFor="password"
-                            sx={{
-                                color: "#666666",
-                            }}
                             error={error.password !== ""}
                         >
                             Hasło
@@ -233,9 +186,6 @@ export default function SignUp() {
                                             setShowPassword(!showPassword);
                                         }}
                                         edge="end"
-                                        sx={{
-                                            color: "#666666",
-                                        }}
                                     >
                                         {showPassword ? (
                                             <VisibilityOff />
@@ -253,12 +203,6 @@ export default function SignUp() {
                                 }))
                             }
                             error={error.password !== ""}
-                            sx={{
-                                "& .css-1d3z3hw-MuiOutlinedInput-notchedOutline":
-                                    {
-                                        borderColor: "#666666",
-                                    },
-                            }}
                         />
                         <FormHelperText error={error.password !== ""}>
                             {error.password !== "" ? error.password : ""}
@@ -273,9 +217,6 @@ export default function SignUp() {
                     >
                         <InputLabel
                             htmlFor="confirmPassword"
-                            sx={{
-                                color: "#666666",
-                            }}
                             error={error.confirmPassword !== ""}
                         >
                             Potwierdź hasło
@@ -295,9 +236,6 @@ export default function SignUp() {
                                             );
                                         }}
                                         edge="end"
-                                        sx={{
-                                            color: "#666666",
-                                        }}
                                     >
                                         {showConfirmPassword ? (
                                             <VisibilityOff />
@@ -315,12 +253,6 @@ export default function SignUp() {
                                 }))
                             }
                             error={error.confirmPassword !== ""}
-                            sx={{
-                                "& .css-1d3z3hw-MuiOutlinedInput-notchedOutline":
-                                    {
-                                        borderColor: "#666666",
-                                    },
-                            }}
                         />
                         <FormHelperText error={error.confirmPassword !== ""}>
                             {error.confirmPassword !== ""
@@ -328,15 +260,15 @@ export default function SignUp() {
                                 : ""}
                         </FormHelperText>
                     </FormControl>
-                    <Button
+                    <LoadingButton
                         type="submit"
                         fullWidth
                         variant="contained"
-                        disabled={isLoading ? true : false}
+                        loading={isLoading}
                         sx={{ mb: 2 }}
                     >
                         Zarejestruj
-                    </Button>
+                    </LoadingButton>
                     <Link href={"/sign-in"}>
                         <Button fullWidth variant="outlined">
                             Logowanie

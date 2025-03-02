@@ -2,7 +2,8 @@
 
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
-import { Button, Card, CardContent, Typography } from "@mui/material";
+import { Card, CardContent, Typography } from "@mui/material";
+import { LoadingButton } from "@mui/lab";
 
 export default function Verification() {
     const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -46,14 +47,14 @@ export default function Verification() {
                     aktywacyjny dla Twojego konta. Prosimy o kliknięcie w
                     przesłany adres w celu weryfikacji.
                 </Typography>
-                <Button
+                <LoadingButton
                     fullWidth
                     variant="contained"
-                    disabled={isLoading ? true : false}
+                    loading={isLoading}
                     onClick={handleResendEmail}
                 >
                     Wyślij ponownie e-mail
-                </Button>
+                </LoadingButton>
 
                 <Typography
                     variant="body1"

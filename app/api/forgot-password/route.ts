@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { getUser } from "@/core/User";
 import {
     IResetPasswordToken,
@@ -23,7 +23,8 @@ export async function POST(req: Request) {
 
         // Technical actions
         const user = await getUser({ email });
-        if (!user?.record)
+
+        if (!user)
             return NextResponse.json({
                 message: "Brak użytkownika o podanym e-mailu.",
                 res: null,
@@ -34,19 +35,19 @@ export async function POST(req: Request) {
             token: uuidv4(),
             user: {
                 connect: {
-                    id: user?.record.id as bigint,
+                    id: user?.id as number,
                 },
             },
             createdAt: new Date(),
             createdBy: {
                 connect: {
-                    id: user?.record.id as bigint,
+                    id: user?.id as number,
                 },
             },
             updatedAt: new Date(),
             updatedBy: {
                 connect: {
-                    id: user?.record.id as bigint,
+                    id: user?.id as number,
                 },
             },
         };
@@ -60,7 +61,7 @@ export async function POST(req: Request) {
 
         const { error } = await resend.emails.send({
             from: "onboarding@resend.dev", // do skonfigurowania gdy już będzie hosting
-            to: [user?.record?.email as string],
+            to: [user?.email as string],
             subject: "BETter - nowe hasło",
             react: ResetPassword({
                 resetPasswordToken: newResetPasswordToken?.record.token,

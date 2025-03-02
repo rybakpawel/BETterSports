@@ -25,23 +25,61 @@ const theme = createTheme({
                 },
             },
         },
-        MuiTextField: {
+        MuiCardContent: {
             styleOverrides: {
                 root: {
-                    "& .css-cvehem-MuiFormLabel-root-MuiInputLabel-root": {
-                        color: "#666666",
+                    margin: "1.5rem",
+                    "&:last-child": {
+                        paddingBottom: "1rem",
                     },
-                    "& .css-1d3z3hw-MuiOutlinedInput-notchedOutline": {
-                        borderColor: "#666666",
+                },
+            },
+        },
+        MuiFormControl: {
+            styleOverrides: {
+                root: {
+                    "& .MuiInputLabel-root:not(.Mui-error)": {
+                        color: "#666666", // kolor placeholdera w inpucie
                     },
-                    // "&:hover:not(:focus)": {
-                    //     label: {
-                    //         color: "#fff",
-                    //     },
-                    // },
-                    label: {
-                        color: "#666666",
+                    "&:hover .MuiInputLabel-root:not(.Mui-error)": {
+                        color: "#ffe400", // kolor placeholdera w inpucie po najechaniu
                     },
+                    "& .MuiInputLabel-root.Mui-focused:not(.Mui-error)": {
+                        color: "#ffe400", // kolor placeholdera w inpucie po kliknięciu
+                    },
+                    "& .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "#666666", // kolor obramowania
+                    },
+                    "& .MuiOutlinedInput-root:not(.Mui-error)": {
+                        "&:hover fieldset": {
+                            borderColor: "#ffe400", // kolor obramowania po najechaniu
+                            transition: "0.3s",
+                        },
+                        "&:hover .MuiIconButton-root": {
+                            color: "#ffe400", // kolor ikony po najechaniu
+                            transition: "color 0.3s",
+                        },
+                        "&.Mui-focused fieldset": {
+                            borderColor: "#ffe400", // kolor obramowania po kliknięciu
+                        },
+                        "&.Mui-focused .MuiIconButton-root": {
+                            color: "#ffe400", // kolor ikony po kliknięciu
+                            transition: "color 0.3s",
+                        },
+                    },
+                    input: {
+                        "&:-webkit-autofill": {
+                            WebkitBoxShadow: "0 0 0 100px #333333 inset",
+                            WebkitTextFillColor: "#fff",
+                        },
+                    },
+                },
+            },
+        },
+        MuiIconButton: {
+            styleOverrides: {
+                root: {
+                    color: "#666666", // Domyślny kolor ikony
                 },
             },
         },
@@ -49,6 +87,170 @@ const theme = createTheme({
             styleOverrides: {
                 root: {
                     textTransform: "none",
+                },
+            },
+        },
+        MuiListItemButton: {
+            styleOverrides: {
+                root: {
+                    "&.Mui-selected": {
+                        color: "000000",
+                        backgroundColor: "#ffe400",
+                    },
+                    "&.Mui-selected:hover": {
+                        color: "000000",
+                        backgroundColor: "#ffe400",
+                    },
+                },
+            },
+        },
+        MuiListItemText: {
+            styleOverrides: {
+                root: {
+                    "&.Mui-selected": {
+                        color: "#ffe400",
+                    },
+                },
+            },
+        },
+        MuiDivider: {
+            styleOverrides: {
+                root: {
+                    borderColor: "#333333",
+                },
+            },
+        },
+        MuiToggleButton: {
+            styleOverrides: {
+                root: {
+                    color: "rgb(118, 118, 118)",
+                    transition: "all 0.5s ease",
+                    borderColor: "rgb(118, 118, 118)",
+                    "&:hover": {
+                        color: "#ffe400",
+                        // backgroundColor: "#ffe400",
+                        // borderColor: "#ffe400",
+                    },
+                    "&.Mui-selected": {
+                        color: "#272727",
+                        backgroundColor: "#ffe400",
+                        borderColor: "#ffe400",
+                    },
+                    "&.Mui-selected:hover": {
+                        color: "#272727",
+                        backgroundColor: "#ffe400",
+                    },
+                },
+            },
+        },
+        MuiSelect: {
+            styleOverrides: {
+                root: {
+                    "& .MuiSvgIcon-root": {
+                        color: "rgb(118, 118, 118)",
+                    },
+                    "& .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "rgb(118, 118, 118)",
+                    },
+                    "&:hover .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "#ffe400",
+                    },
+                    "&:hover .MuiSvgIcon-root": {
+                        color: "#ffe400",
+                    },
+                    "&.Mui-focused .MuiSelect-select": {
+                        color: "#ffe400", // kolor tekstu, gdy select jest zaznaczony
+                    },
+                    "&.Mui-focused .MuiSvgIcon-root, &.Mui-focused .MuiOutlinedInput-notchedOutline":
+                        {
+                            color: "#ffe400",
+                            borderColor: "#ffe400",
+                        },
+                },
+            },
+        },
+        MuiMenuItem: {
+            styleOverrides: {
+                root: {
+                    "&:hover": {
+                        // backgroundColor: "#ffe400",
+                        color: "#ffe400",
+                        transition: "all 0.5s ease",
+                    },
+                    "&:focus": {
+                        backgroundColor: "#ffe400",
+                        color: "#272727",
+                    },
+                    "&.Mui-selected": {
+                        backgroundColor: "#ffe400",
+                        color: "#272727",
+                        "&:hover": {
+                            backgroundColor: "#ffe400",
+                            color: "#272727",
+                        },
+                    },
+                },
+            },
+        },
+        MuiAutocomplete: {
+            styleOverrides: {
+                root: {
+                    "& .MuiAutocomplete-popupIndicator": {
+                        color: "rgb(118, 118, 118)",
+                    },
+                    "& .MuiAutocomplete-clearIndicator": {
+                        color: "rgb(118, 118, 118)",
+                    },
+                    "&:hover .MuiAutocomplete-popupIndicator, &:hover .MuiAutocomplete-clearIndicator":
+                        {
+                            color: "#fff",
+                        },
+                    "&:focus-within .MuiAutocomplete-popupIndicator, &:focus-within .MuiAutocomplete-clearIndicator":
+                        {
+                            color: "#ffef66",
+                        },
+                },
+                listbox: {
+                    ".MuiAutocomplete-option": {
+                        backgroundColor: "#ffe400",
+                        color: "#272727",
+                        transition: "all 0.5s ease",
+                        "&.Mui-focused": {
+                            backgroundColor: "#ffe400",
+                            color: "#272727",
+                        },
+                        '&[aria-selected="true"]': {
+                            backgroundColor: "#272727",
+                            color: "#fff",
+                        },
+                        '&.Mui-focused[aria-selected="true"]': {
+                            backgroundColor: "#272727",
+                            color: "#ffe400",
+                        },
+                    },
+                },
+            },
+        },
+        MuiModal: {
+            styleOverrides: {
+                root: {
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    "& .MuiCard-root": {
+                        width: "80vw",
+                    },
+                    "@media (min-width:900px)": {
+                        "&[data-size='small'] .MuiCard-root": {
+                            width: "30vw",
+                        },
+                        "&[data-size='medium'] .MuiCard-root": {
+                            width: "50vw",
+                        },
+                        "&[data-size='large'] .MuiCard-root": {
+                            width: "80vw",
+                        },
+                    },
                 },
             },
         },
@@ -68,7 +270,7 @@ const theme = createTheme({
         },
         background: {
             default: "#272727",
-            paper: "#272727",
+            paper: "#333333",
         },
         text: {
             primary: "#fff",
