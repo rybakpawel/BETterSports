@@ -1,6 +1,8 @@
 "use client";
 
-import { FormEvent, useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
+import { Controller, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
     Box,
     Card,
@@ -11,52 +13,42 @@ import {
 } from "@mui/material";
 import { LoadingButton } from "@mui/lab";
 import "dayjs/locale/pl";
-import dayjs, { Dayjs } from "dayjs";
-import { settingsUserDataClientValidation } from "@/validation/client/settingsUserDataClientValidation";
 import LabelTextInput from "../form/LabelTextInput";
 import LabelDateInput from "../form/LabelDateInput";
 import LabelButtonsInput from "../form/LabelButtonsInput";
 import LabelSelectInput from "../form/LabelSelectInput";
 import LabelAutocompleteInput from "../form/LabelAutocompleteInput";
+import { Gender } from "@prisma/client";
+import ApiResponseAlert, {
+    ApiResponse,
+} from "@/components/alerts/ApiResponseAlert";
+import {
+    settingsUserDataValidation,
+    SettingsUserDataType,
+} from "@/validation/common/settingsUserDataValidation";
+import {
+    createCityValidation,
+    CreateCityType,
+} from "@/validation/common/createCityValidation";
+import dayjs from "dayjs";
 
-interface INationality {
+type IdNameType = {
     id: number;
     name: string;
-}
-
-interface ICities {
-    id: number;
-    name: string;
-}
+};
 
 interface IUserDataFormProps {
-    userId: string | undefined;
     name: string;
     lastName: string;
-    birthDate: Date;
+    birthDate: Date | null;
     gender: string;
     nationalityId: number;
     cityId: number;
     cityName: string;
-    nationalitiesList: INationality[];
-}
-
-interface IUserSettingsForm {
-    name: string;
-    lastName: string;
-    birthDate: Dayjs | null;
-    gender: string;
-    nationality: number;
-    city: number;
-}
-
-interface INewCityForm {
-    country: string;
-    name: string;
+    nationalitiesList: IdNameType[];
 }
 
 const UserDataForm: React.FC<IUserDataFormProps> = ({
-    userId,
     name,
     lastName,
     birthDate,
@@ -66,17 +58,38 @@ const UserDataForm: React.FC<IUserDataFormProps> = ({
     cityName,
     nationalitiesList,
 }) => {
-    const [isLoading, setIsLoading] = useState<boolean>(false);
-    const [userSettingsForm, setUserSettingsForm] = useState<IUserSettingsForm>(
-        {
+    const [apiResponse, setApiResponse] = useState<ApiResponse | null>(null);
+    const [isApiResponseVisible, setIsApiResponseVisible] = useState(false);
+    const {
+        register: userDataRegister,
+        control: userDataControl,
+        handleSubmit: handleSubmitUserData,
+        formState: { errors: userDataFormErrors },
+    } = useForm<SettingsUserDataType>({
+        resolver: zodResolver(settingsUserDataValidation),
+        defaultValues: {
             name,
             lastName,
-            birthDate: birthDate ? dayjs(birthDate) : null,
+            birthDate: birthDate ? dayjs(birthDate) : undefined,
             gender,
             nationality: nationalityId,
             city: cityId,
-        }
-    );
+        },
+    });
+    const {
+        register: createCityRegister,
+        control: createCityControl,
+        handleSubmit: handleSubmitCreateCity,
+        reset: resetCreateCityForm,
+        formState: { errors: createCityFormErrors },
+    } = useForm<CreateCityType>({
+        resolver: zodResolver(createCityValidation),
+        defaultValues: {
+            country: 0,
+            name: "",
+        },
+    });
+    const [isLoading, setIsLoading] = useState<boolean>(false);
     const [isLoadingCities, setIsLoadingCities] = useState<boolean>(false);
     const [defaultCityId, setDefaultCityId] = useState<number>(
         cityId ? cityId : 0
@@ -84,27 +97,13 @@ const UserDataForm: React.FC<IUserDataFormProps> = ({
     const [cityInput, setCityInput] = useState<string>(
         cityName ? cityName : ""
     );
-    const [citiesList, setCitiesList] = useState<ICities[]>([]);
-    const [error, setError] = useState({
-        name: "",
-        lastName: "",
-        birthDate: "",
-        gender: "",
-        nationality: "",
-        city: "",
-    });
-    const [isUpdateMessageVisible, setIsUpdateMessageVisible] =
-        useState<boolean>(false);
-
+    const [citiesList, setCitiesList] = useState<IdNameType[]>([]);
     const [openAddCityModal, setOpenAddCityModal] = useState<boolean>(false);
     const [isLoadingModal, setIsLoadingModal] = useState<boolean>(false);
-    const [newCityForm, setNewCityForm] = useState<INewCityForm>({
-        country: "",
-        name: "",
-    });
 
     useEffect(() => {
         setIsLoadingCities(true);
+
         const fetchData = async () => {
             const response = await fetch(
                 `${process.env.NEXT_PUBLIC_API_URL}/get-cities-by-input`,
@@ -115,13 +114,9 @@ const UserDataForm: React.FC<IUserDataFormProps> = ({
                 }
             );
 
-            if (!response.ok) {
-                throw new Error("Network response was not ok");
-            }
+            const result = await response.json();
 
-            const res = await response.json();
-
-            if (res.cities) setCitiesList(res.cities);
+            if (result.data) setCitiesList(result.data.cities);
             else setCitiesList([]);
 
             setIsLoadingCities(false);
@@ -130,222 +125,183 @@ const UserDataForm: React.FC<IUserDataFormProps> = ({
         fetchData();
     }, [cityInput]);
 
-    const handleSubmitForm = async (e: FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
+    const handleSubmitUserDataForm = async (data: SettingsUserDataType) => {
         setIsLoading(true);
 
-        const { name, lastName, birthDate, gender, nationality, city } =
-            userSettingsForm;
+        const { name, lastName, birthDate, gender, nationality, city } = data;
 
-        const validationResult = settingsUserDataClientValidation(
-            name === null ? "" : "",
-            lastName === null ? "" : "",
+        const body = {
+            name,
+            lastName,
             birthDate,
-            cityInput
+            gender,
+            nationality,
+            city,
+        };
+
+        const response = await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL}/update-settings-user-data`,
+            {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(body),
+            }
         );
 
-        if (!validationResult.success) {
-            let newErrors = {
+        const result = await response.json();
+
+        setApiResponse(result);
+        setIsApiResponseVisible(true);
+        setIsLoading(false);
+    };
+
+    const handleCreateCity = () => {
+        setOpenAddCityModal(!openAddCityModal);
+        if (openAddCityModal) {
+            resetCreateCityForm({
+                country: 0,
                 name: "",
-                lastName: "",
-                birthDate: "",
-                gender: "",
-                nationality: "",
-                city: "",
-            };
-
-            validationResult.error.issues.forEach((error) => {
-                const fieldName = error.path[0];
-                const errorMessage = error.message;
-                if (newErrors[fieldName as keyof IUserSettingsForm]) return;
-                newErrors[fieldName as keyof IUserSettingsForm] = errorMessage;
             });
-
-            setError(newErrors);
-            setIsLoading(false);
-        } else {
-            setError({
-                name: "",
-                lastName: "",
-                birthDate: "",
-                gender: "",
-                nationality: "",
-                city: "",
-            });
-
-            const body = {
-                name,
-                lastName,
-                birthDate: birthDate?.toDate(),
-                gender,
-                nationality,
-                city,
-            };
-
-            const response = await fetch(
-                `${process.env.NEXT_PUBLIC_API_URL}/update-user-data/${userId}`,
-                {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(body),
-                }
-            );
-
-            const data = await response.json();
-
-            // if (!data.errorMessage) router.push(`/verification?id=${data.res}`); // TODO do poprawy podczas prac nad obsługą błędów
-
-            console.log(data); // TODO do poprawy podczas prac nad obsługą błędow
-
-            setIsLoading(false);
-            setIsUpdateMessageVisible(true);
         }
     };
 
-    const handleAddCity = () => {
-        setNewCityForm({ country: "", name: "" });
-        setOpenAddCityModal(!openAddCityModal);
-    };
-
-    const handleSubmitAddNewCity = async (e: FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
+    const handleSubmitCreateCityForm = async (data: CreateCityType) => {
         setIsLoadingModal(true);
 
-        // TODO Walidacja (do zrobienia podczas pracy nad obsługą błędów)
+        const { country, name } = data;
+
+        const body = {
+            country,
+            name,
+        };
 
         const response = await fetch(
             `${process.env.NEXT_PUBLIC_API_URL}/create-city`,
             {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(newCityForm),
+                body: JSON.stringify(body),
             }
         );
 
-        const data = await response.json();
+        const result = await response.json();
 
-        handleAddCity();
+        resetCreateCityForm({
+            country: 0,
+            name: "",
+        });
+
+        handleCreateCity();
+        setApiResponse(result);
+        setIsApiResponseVisible(true);
         setIsLoadingModal(false);
     };
 
     return (
         <>
-            <Box component="form" onSubmit={handleSubmitForm} sx={{ p: 2 }}>
+            <Box
+                component="form"
+                onSubmit={handleSubmitUserData(handleSubmitUserDataForm)}
+                sx={{ p: 2 }}
+            >
                 <Typography variant="h5" component="h2">
                     Dane użytkownika
                 </Typography>
                 <Divider sx={{ my: 2 }} />
-                <Typography
-                    component="span"
-                    sx={{
-                        display: isUpdateMessageVisible ? "block" : "none",
-                        mb: 2,
-                        textAlign: "center",
-                        color: "primary.main",
-                    }}
-                >
-                    Zaktualizowano dane!
-                </Typography>
                 <LabelTextInput
                     label="Imię"
                     inputId="name"
-                    inputName="name"
-                    inputValue={userSettingsForm.name}
-                    errorText={error.name}
-                    onChange={(e) =>
-                        setUserSettingsForm((prevState) => ({
-                            ...prevState,
-                            name: e.target.value,
-                        }))
-                    }
+                    errorText={userDataFormErrors.name?.message}
+                    textFieldProps={{
+                        ...userDataRegister("name"),
+                    }}
                 />
                 <LabelTextInput
                     label="Nazwisko"
                     inputId="lastName"
-                    inputName="lastName"
-                    inputValue={userSettingsForm.lastName}
-                    errorText={error.lastName}
-                    onChange={(e) =>
-                        setUserSettingsForm((prevState) => ({
-                            ...prevState,
-                            lastName: e.target.value,
-                        }))
-                    }
-                />
-                <LabelDateInput
-                    label="Data urodzenia"
-                    inputId="birthDate"
-                    inputName="birthDate"
-                    inputValue={userSettingsForm.birthDate}
-                    errorText={error.birthDate}
-                    onChange={(newValue) =>
-                        setUserSettingsForm((prevState) => ({
-                            ...prevState,
-                            birthDate: newValue,
-                        }))
-                    }
-                />
-                <LabelButtonsInput
-                    label="Płeć"
-                    inputId="gender"
-                    inputName="gender"
-                    inputValue={userSettingsForm.gender}
-                    errorText={error.gender}
-                    buttons={[
-                        { value: "FEMALE", label: "Kobieta" },
-                        { value: "MALE", label: "Mężczyzna" },
-                    ]}
-                    onChange={(e, value) =>
-                        setUserSettingsForm((prevState) => ({
-                            ...prevState,
-                            gender: value,
-                        }))
-                    }
-                />
-                <LabelSelectInput
-                    label="Narodowość"
-                    inputId="nationality"
-                    inputName="nationality"
-                    inputValue={userSettingsForm.nationality?.toString()}
-                    errorText={error.nationality}
-                    dataList={nationalitiesList}
-                    onChange={(e) =>
-                        setUserSettingsForm((prevState) => ({
-                            ...prevState,
-                            nationality: e.target.value
-                                ? Number(e.target.value)
-                                : 0,
-                        }))
-                    }
-                />
-                <LabelAutocompleteInput
-                    label="Miasto"
-                    inputId="city"
-                    inputName="city"
-                    inputValue={cityInput}
-                    defaultId={defaultCityId}
-                    isButton={true}
-                    buttonText="Dodaj nowe miasto"
-                    errorText={error.city}
-                    dataList={citiesList}
-                    isLoadingData={isLoadingCities}
-                    onChange={(e, newValue) => {
-                        setUserSettingsForm((prevState) => ({
-                            ...prevState,
-                            city: newValue ? Number(newValue.id) : 0,
-                        }));
+                    errorText={userDataFormErrors.lastName?.message}
+                    textFieldProps={{
+                        ...userDataRegister("lastName"),
                     }}
-                    onInputChange={(event, newInputValue, reason) => {
-                        setCityInput(newInputValue);
-                    }}
-                    onButtonClick={handleAddCity}
+                />
+                <Controller
+                    name="birthDate"
+                    control={userDataControl}
+                    render={({ field }) => (
+                        <LabelDateInput
+                            inputId="birthDate"
+                            label="Data urodzenia"
+                            value={field.value ?? null}
+                            onChange={field.onChange}
+                            errorText={userDataFormErrors.birthDate?.message}
+                        />
+                    )}
+                />
+                <Controller
+                    name="gender"
+                    control={userDataControl}
+                    render={({ field }) => (
+                        <LabelButtonsInput
+                            label="Płeć"
+                            inputId="gender"
+                            value={field.value ?? ""}
+                            errorText={userDataFormErrors.gender?.message}
+                            buttons={[
+                                { value: Gender.FEMALE, label: "Kobieta" },
+                                { value: Gender.MALE, label: "Mężczyzna" },
+                            ]}
+                            onChange={(event, newValue) => {
+                                field.onChange(newValue || "");
+                            }}
+                        />
+                    )}
+                />
+                <Controller
+                    name="nationality"
+                    control={userDataControl}
+                    render={({ field }) => (
+                        <LabelSelectInput
+                            label="Narodowość"
+                            inputId="nationality"
+                            value={field.value?.toString() ?? ""}
+                            errorText={userDataFormErrors.nationality?.message}
+                            dataList={nationalitiesList}
+                            onChange={(event) => {
+                                field.onChange(Number(event.target.value));
+                            }}
+                        />
+                    )}
+                />
+                <Controller
+                    name="city"
+                    control={userDataControl}
+                    render={({ field, fieldState }) => (
+                        <LabelAutocompleteInput
+                            label="Miasto"
+                            inputId="city"
+                            inputValue={cityInput}
+                            defaultId={defaultCityId}
+                            isButton={true}
+                            buttonText="Dodaj nowe miasto"
+                            errorText={fieldState.error?.message}
+                            dataList={citiesList}
+                            isLoadingData={isLoadingCities}
+                            onChange={(event, newValue) =>
+                                field.onChange(newValue ? newValue.id : 0)
+                            }
+                            onInputChange={(event, newInputValue, reason) => {
+                                setCityInput(newInputValue);
+                            }}
+                            onButtonClick={handleCreateCity}
+                        />
+                    )}
                 />
                 <Box
                     sx={{
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "flex-end",
-                        mb: error.city ? 0 : 2,
+                        mb: userDataFormErrors.city ? 0 : 2,
                     }}
                 >
                     <LoadingButton
@@ -362,7 +318,7 @@ const UserDataForm: React.FC<IUserDataFormProps> = ({
             </Box>
             <Modal
                 open={openAddCityModal}
-                onClose={() => handleAddCity()}
+                onClose={() => handleCreateCity()}
                 aria-labelledby="modal-modal-title"
                 aria-describedby="modal-modal-description"
                 data-size="medium"
@@ -375,32 +331,38 @@ const UserDataForm: React.FC<IUserDataFormProps> = ({
                         <Box
                             component="form"
                             sx={{ mt: 5 }}
-                            onSubmit={handleSubmitAddNewCity}
+                            onSubmit={handleSubmitCreateCity(
+                                handleSubmitCreateCityForm
+                            )}
                         >
-                            <LabelSelectInput
-                                label="Kraj"
-                                inputId="country"
-                                inputName="country"
-                                inputValue={newCityForm.country}
-                                dataList={nationalitiesList}
-                                onChange={(e) =>
-                                    setNewCityForm((prevState) => ({
-                                        ...prevState,
-                                        country: e.target.value,
-                                    }))
-                                }
+                            <Controller
+                                name="country"
+                                control={createCityControl}
+                                render={({ field }) => (
+                                    <LabelSelectInput
+                                        label="Kraj"
+                                        inputId="country"
+                                        value={field.value?.toString() ?? ""}
+                                        errorText={
+                                            createCityFormErrors.country
+                                                ?.message
+                                        }
+                                        dataList={nationalitiesList}
+                                        onChange={(event) => {
+                                            field.onChange(
+                                                Number(event.target.value)
+                                            );
+                                        }}
+                                    />
+                                )}
                             />
                             <LabelTextInput
                                 label="Nazwa"
                                 inputId="cityName"
-                                inputName="cityName"
-                                inputValue={newCityForm.name}
-                                onChange={(e) =>
-                                    setNewCityForm((prevState) => ({
-                                        ...prevState,
-                                        name: e.target.value,
-                                    }))
-                                }
+                                errorText={createCityFormErrors.name?.message}
+                                textFieldProps={{
+                                    ...createCityRegister("name"),
+                                }}
                             />
                             <Box
                                 sx={{
@@ -424,6 +386,11 @@ const UserDataForm: React.FC<IUserDataFormProps> = ({
                     </CardContent>
                 </Card>
             </Modal>
+            <ApiResponseAlert
+                open={isApiResponseVisible}
+                onClose={() => setIsApiResponseVisible(false)}
+                response={apiResponse}
+            />
         </>
     );
 };

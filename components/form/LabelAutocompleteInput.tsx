@@ -17,7 +17,6 @@ interface IDataItem {
 interface IAutocompleteInputProps {
     label: string;
     inputId: string;
-    inputName: string;
     inputValue: string;
     defaultId: number;
     isButton?: boolean;
@@ -41,7 +40,6 @@ interface IAutocompleteInputProps {
 const LabelAutocompleteInput: React.FC<IAutocompleteInputProps> = ({
     label,
     inputId,
-    inputName,
     inputValue,
     defaultId,
     isButton = false,

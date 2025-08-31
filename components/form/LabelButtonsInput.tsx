@@ -12,8 +12,7 @@ import {
 interface IButtonInputProps {
     label: string;
     inputId: string;
-    inputName: string;
-    inputValue: string;
+    value: string;
     isButton?: boolean;
     buttonText?: string;
     errorText?: string;
@@ -21,14 +20,16 @@ interface IButtonInputProps {
         value: string;
         label: string;
     }>;
-    onChange: (event: React.MouseEvent<HTMLElement>, newValue: string) => void;
+    onChange: (
+        event: React.MouseEvent<HTMLElement>,
+        newValue: string | null
+    ) => void;
 }
 
 const LabelButtonsInput: React.FC<IButtonInputProps> = ({
     label,
     inputId,
-    inputName,
-    inputValue,
+    value,
     isButton = false,
     buttonText = "",
     errorText,
@@ -65,7 +66,7 @@ const LabelButtonsInput: React.FC<IButtonInputProps> = ({
                 >
                     <ToggleButtonGroup
                         color="primary"
-                        value={inputValue}
+                        value={value}
                         onChange={onChange}
                         exclusive
                         sx={{

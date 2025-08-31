@@ -9,13 +9,25 @@ Structure
    Reużywalne komponenty front-endowe.
 
 3. Core
-   Najniższa warstwa architektury, która udostępnia swoje api wyższym rzędom oraz operuje tylko i wyłącznie bezpośrednio na tabelach.
+   Najniższa warstwa architektury, która udostępnia swoje API wyższym rzędom oraz operuje tylko i wyłącznie bezpośrednio na tabelach.
 
-4. Prisma
+4. Helpers
+   Reużywalne funkcje pomocnicze.
+
+5. Logic
+   Funkcje obsługujące logikę biznesową. Moga być używane bezpośrednio w komponentach serwerowych lub w route API.
+
+6. Prisma
    Konfiguracja Prismy oraz schemat modeli bazy danych.
 
-5. Public
+7. Public
    Pliki statyczne używane w aplikacji.
 
-6. Validation
-   Funkcje walidacyjne używane tylko w metodach biznesowych, przed operacjami technicznymi.
+8. Styles
+   Ustandaryzowane style zgodne z biblioteką MUI oraz design system.
+
+9. Types
+   Typy i interfejsy używane funkcjach biznesowych, core oraz walidatorach.
+
+10. Validation
+    Funkcje walidacyjne wspólne (używane po stronie front-endu i w metodach biznesowych) oraz serwerowe (używane tylko w metodach biznesowych).

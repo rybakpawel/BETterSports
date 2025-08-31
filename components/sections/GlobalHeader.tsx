@@ -9,23 +9,24 @@ import {
 import MailOutlineIcon from "@mui/icons-material/MailOutline";
 import MobileHeaderMenu from "./MobileHeaderMenu";
 import HeaderUserMenu from "./HeaderUserMenu";
+import { getGlobalHeaderData } from "@/logic/getGlobalHeaderData";
 
-async function fetchProfileImage(userId: string | undefined) {
-    const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/global-header-data/${userId}`,
-        {
-            cache: "no-store",
-        }
-    );
-    const { res } = await response.json();
+async function fetchProfileImage() {
+    const result = await getGlobalHeaderData();
 
-    if (res.profileImage) return res.profileImage.url;
+    if (result.success) {
+        const profileImage = result.data?.profileImage;
+
+        if (profileImage) return profileImage.url;
+    }
+
+    return "";
 }
 
 const GlobalHeader = async ({ userId }: { userId?: string }) => {
     const menu = ["Wydarzenia", "Obiekty", "Gadżety", "Stwórz turniej"];
 
-    const profileImage: string = await fetchProfileImage(userId);
+    const profileImage: string = await fetchProfileImage();
 
     return (
         <AppBar position="static">

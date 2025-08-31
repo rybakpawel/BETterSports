@@ -1,18 +1,4 @@
 import { Gender } from "@prisma/client";
-import prisma from "@/prisma";
-
-export interface Person {
-    id: number;
-    name: string;
-    lastName: string;
-    birthDate: string;
-    gender: string;
-    nationalityId: number;
-    createdAt: Date;
-    createdById: number;
-    updatedAt: Date;
-    updatedById: number;
-}
 
 export interface PersonKey {
     id?: number;
@@ -42,19 +28,4 @@ export interface IPersonUpdate {
     createdById: number | null;
     updatedAt: Date;
     updatedById: number | null;
-}
-
-// nigdzie nie używane, zrobione przez pomyłkę, zostawione na później do wykorzystania
-export async function deletePerson(personId: number) {
-    try {
-        await prisma.person.delete({
-            where: { id: personId },
-        });
-
-        console.log(
-            `Rekord Person o ID ${personId} został usunięty, a powiązane pola w User ustawione na NULL.`
-        );
-    } catch (error) {
-        console.error(error);
-    }
 }

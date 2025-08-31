@@ -1,4 +1,5 @@
 import prisma from "@/prisma";
+import { CoreError } from "@/helpers/errorAndResponseHandlers";
 
 // 1 usage
 export async function getAllSports() {
@@ -9,6 +10,22 @@ export async function getAllSports() {
 
         return records;
     } catch (error) {
-        console.error(error);
+        throw new CoreError(
+            "Wystąpił błąd podczas pobierania listy wszystkich sportów"
+        );
+    }
+}
+
+export async function getSportById(sportId: number) {
+    try {
+        const record = await prisma.sport.findUnique({
+            where: { id: sportId },
+        });
+
+        return record;
+    } catch (error) {
+        throw new CoreError(
+            "Wystąpił błąd podczas pobierania sportu na podstawie jego identyfikatora"
+        );
     }
 }

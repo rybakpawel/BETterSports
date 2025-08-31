@@ -1,4 +1,5 @@
 import prisma from "@/prisma";
+import { CoreError } from "@/helpers/errorAndResponseHandlers";
 
 export interface ITeam {
     id: number;
@@ -36,7 +37,9 @@ export async function getTeamsByInput(input: string) {
 
         return records;
     } catch (error) {
-        console.error(error);
+        throw new CoreError(
+            "Wystąpił błąd podczas pobierania listy drużyn na podstawie formularza"
+        );
     }
 }
 
@@ -50,5 +53,19 @@ export async function createTeam(team: Partial<ITeam>) {
         return { record };
     } catch (error) {
         console.error(error);
+    }
+}
+
+export async function getTeamById(teamId: number) {
+    try {
+        const record = await prisma.team.findUnique({
+            where: { id: teamId },
+        });
+
+        return record;
+    } catch (error) {
+        throw new CoreError(
+            "Wystąpił błąd podczas pobierania drużyny na podstawie jej identyfikatora"
+        );
     }
 }

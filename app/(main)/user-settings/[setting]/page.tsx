@@ -1,5 +1,3 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import {
     Box,
     Card,
@@ -12,85 +10,51 @@ import {
 } from "@mui/material";
 import UserDataForm from "@/components/sections/UserDataForm";
 import AccountDataForm from "@/components/sections/AccountDataForm";
+import { getUserSettings } from "@/logic/getUserSettings";
+import { getSports } from "@/logic/getSports";
+import { getCountries } from "@/logic/getCountries";
 
-interface INationality {
+type FormList = {
     id: number;
     name: string;
-}
-
-interface ISport {
-    id: number;
-    name: string;
-}
+};
 
 async function fetchCountries() {
-    const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/get-countries`,
-        {
-            cache: "no-store",
-        }
-    );
-    const { res } = await response.json();
+    const result = await getCountries();
 
-    return res.countries;
+    if (!result.success || !result.data) {
+        return [];
+    }
+
+    return result.data.countries;
 }
 
 async function fetchSports() {
-    const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/get-sports`,
-        {
-            cache: "no-store",
-        }
-    );
-    const { res } = await response.json();
+    const result = await getSports();
 
-    return res.sports;
+    if (!result.success || !result.data) {
+        return [];
+    }
+
+    return result.data.sports;
 }
 
-async function fetchSettings(userId: string | undefined) {
-    const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/get-settings/${userId}`,
-        {
-            cache: "no-store",
-        }
-    );
-    const res = await response.json();
+async function fetchSettings() {
+    const result = await getUserSettings();
 
-    return res.settings;
+    return result.data?.settings;
 }
+
 export default async function UserSettings({
     params,
 }: {
     params: { setting: string };
 }) {
     const { setting } = params;
-    const session = await getServerSession(authOptions);
 
-    const countries: INationality[] = await fetchCountries();
-    const sports: ISport[] = await fetchSports();
-    const {
-        email,
-        username,
-        profileImageId,
-        profileImageName,
-        profileImageUrl,
-        backgroundImageId,
-        backgroundImageName,
-        backgroundImageUrl,
-        favouriteSportId,
-        isFavouriteSportIndividual,
-        favouriteTeamId,
-        favouriteTeamName,
-        cityId,
-        cityName,
-        primaryColor,
-        secondaryColor,
-        name,
-        lastName,
-        birthDate,
-        gender,
-        nationalityId,
-    } = await fetchSettings(session?.user.id);
+    const countries: FormList[] = await fetchCountries();
+    const sports: FormList[] = await fetchSports();
+    const settings = await fetchSettings();
 
     return (
         <main>
@@ -185,35 +149,39 @@ export default async function UserSettings({
                 <Box sx={{ flexBasis: "65%" }}>
                     {setting === "user-data" ? (
                         <UserDataForm
-                            userId={session?.user.id}
-                            name={name}
-                            lastName={lastName}
-                            birthDate={birthDate}
-                            gender={gender}
-                            nationalityId={nationalityId}
-                            cityId={cityId}
-                            cityName={cityName}
+                            name={settings?.name ?? ""}
+                            lastName={settings?.lastName ?? ""}
+                            birthDate={settings?.birthDate ?? null}
+                            gender={settings?.gender ?? ""}
+                            nationalityId={settings?.nationalityId ?? 0}
+                            cityId={settings?.cityId ?? 0}
+                            cityName={settings?.cityName ?? ""}
                             nationalitiesList={countries}
                         />
                     ) : null}
                     {setting === "account-data" ? (
                         <AccountDataForm
-                            userId={session?.user.id}
-                            username={username}
-                            profileImageId={profileImageId}
-                            profileImageName={profileImageName}
-                            profileImageUrl={profileImageUrl}
-                            backgroundImageId={backgroundImageId}
-                            backgroundImageName={backgroundImageName}
-                            backgroundImageUrl={backgroundImageUrl}
-                            favouriteSportId={favouriteSportId}
-                            isFavouriteSportIndividual={
-                                isFavouriteSportIndividual
+                            username={settings?.username ?? ""}
+                            profileImageId={settings?.profileImageId ?? 0}
+                            profileImageName={settings?.profileImageName ?? ""}
+                            profileImageUrl={settings?.profileImageUrl ?? ""}
+                            backgroundImageId={settings?.backgroundImageId ?? 0}
+                            backgroundImageName={
+                                settings?.backgroundImageName ?? ""
                             }
-                            favouriteTeamId={favouriteTeamId}
-                            favouriteTeamName={favouriteTeamName}
-                            primaryColor={primaryColor}
-                            secondaryColor={secondaryColor}
+                            backgroundImageUrl={
+                                settings?.backgroundImageUrl ?? ""
+                            }
+                            favouriteSportId={settings?.favouriteSportId ?? 0}
+                            isFavouriteSportIndividual={
+                                settings?.isFavouriteSportIndividual ?? false
+                            }
+                            favouriteTeamId={settings?.favouriteTeamId ?? 0}
+                            favouriteTeamName={
+                                settings?.favouriteTeamName ?? ""
+                            }
+                            primaryColor={settings?.primaryColor ?? ""}
+                            secondaryColor={settings?.secondaryColor ?? ""}
                             sportsList={sports}
                         />
                     ) : null}

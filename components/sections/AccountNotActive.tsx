@@ -3,26 +3,34 @@
 import { useState } from "react";
 import { Card, CardContent, Typography } from "@mui/material";
 import { LoadingButton } from "@mui/lab";
+import ApiResponseAlert, {
+    ApiResponse,
+} from "@/components/alerts/ApiResponseAlert";
 
 const AccountNotActive = ({ userId }: { userId?: string }) => {
     const [isLoading, setIsLoading] = useState<boolean>(false);
-    const [additionalText, setAdditionalText] = useState<string>("");
+    const [apiResponse, setApiResponse] = useState<ApiResponse | null>(null);
+    const [isApiResponseVisible, setIsApiResponseVisible] =
+        useState<boolean>(false);
 
     const handleResendEmail = async () => {
         setIsLoading(true);
 
         const response = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/resend-verification-email/${userId}`,
+            `${process.env.NEXT_PUBLIC_API_URL}/resend-verification-email`,
             {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: userId,
                 cache: "no-store",
             }
         );
 
-        const data = await response.json();
-        setIsLoading(false);
-        setAdditionalText("Wysłano kod aktywacyjny.");
+        const result = await response.json();
 
-        console.log(data); // do poprawy podczas prac nad obsługą błędow
+        setIsLoading(false);
+        setApiResponse(result);
+        setIsApiResponseVisible(true);
     };
 
     return (
@@ -54,15 +62,13 @@ const AccountNotActive = ({ userId }: { userId?: string }) => {
                     >
                         Wyślij kod
                     </LoadingButton>
-
-                    <Typography
-                        variant="body1"
-                        sx={{ mt: 2, textAlign: "center" }}
-                    >
-                        {additionalText}
-                    </Typography>
                 </CardContent>
             </Card>
+            <ApiResponseAlert
+                open={isApiResponseVisible}
+                onClose={() => setIsApiResponseVisible(false)}
+                response={apiResponse}
+            />
         </>
     );
 };

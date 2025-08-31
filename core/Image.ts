@@ -1,4 +1,5 @@
 import prisma from "@/prisma";
+import { CoreError } from "@/helpers/errorAndResponseHandlers";
 
 export interface IImage {
     id: number;
@@ -25,7 +26,7 @@ export async function createImage(image: Partial<IImage>) {
 
         return { record };
     } catch (error) {
-        console.error(error);
+        throw new CoreError("Wystąpił błąd podczas tworzenia obrazu");
     }
 }
 
@@ -40,6 +41,6 @@ export async function deleteImage(imageId: number) {
             `Obraz o ID ${imageId} został usunięty, a powiązane pola w User ustawione na NULL.`
         );
     } catch (error) {
-        console.error(error);
+        throw new CoreError("Wystąpił błąd podczas usuwania obrazu");
     }
 }

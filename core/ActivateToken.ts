@@ -1,4 +1,5 @@
 import prisma from "@/prisma";
+import { CoreError } from "@/helpers/errorAndResponseHandlers";
 
 export interface IActivateToken {
     id: number;
@@ -48,7 +49,9 @@ export async function getActivateToken(whereClause: IActivateTokenWhereClause) {
 
         return { record };
     } catch (error) {
-        console.error(error);
+        throw new CoreError(
+            "Wystąpił błąd podczas pobierania tokenu aktywacyjnego"
+        );
     }
 }
 
@@ -63,7 +66,9 @@ export async function createActivateToken(
 
         return { record };
     } catch (error) {
-        console.error(error);
+        throw new CoreError(
+            "Wystąpił błąd podczas tworzenia tokenu aktywacyjnego"
+        );
     }
 }
 
@@ -82,6 +87,8 @@ export async function updateActivateToken(
 
         return { record };
     } catch (error) {
-        console.error(error);
+        throw new CoreError(
+            "Wystąpił błąd podczas aktualizacji tokenu aktywacyjnego"
+        );
     }
 }

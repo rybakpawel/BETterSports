@@ -1,4 +1,5 @@
 import prisma from "@/prisma";
+import { CoreError } from "@/helpers/errorAndResponseHandlers";
 
 export interface IResetPasswordToken {
     id: number;
@@ -37,7 +38,9 @@ export async function getResetPasswordToken(
 
         return { record };
     } catch (error) {
-        console.error(error);
+        throw new CoreError(
+            "Wystąpił błąd podczas pobierania tokenu do resetowania hasła"
+        );
     }
 }
 
@@ -52,6 +55,8 @@ export async function createResetPasswordToken(
 
         return { record };
     } catch (error) {
-        console.error(error);
+        throw new CoreError(
+            "Wystąpił błąd podczas tworzenia tokenu do resetowania hasła"
+        );
     }
 }

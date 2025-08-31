@@ -10,25 +10,23 @@ import "dayjs/locale/pl";
 import dayjs, { Dayjs } from "dayjs";
 
 interface IDateInputProps {
-    label: string;
     inputId: string;
-    inputName: string;
-    inputValue: Dayjs | null;
+    label: string;
+    value: Dayjs | null;
+    onChange: (value: Dayjs | null) => void;
+    errorText?: string;
     isButton?: boolean;
     buttonText?: string;
-    errorText?: string;
-    onChange: (value: Dayjs | null) => void;
 }
 
 const LabelDateInput: React.FC<IDateInputProps> = ({
-    label,
     inputId,
-    inputName,
-    inputValue,
+    label,
+    value,
+    onChange,
+    errorText,
     isButton = false,
     buttonText = "",
-    errorText,
-    onChange,
 }) => {
     const [isDatePickerSelected, setIsDatePickerSelected] = useState(false);
 
@@ -75,7 +73,7 @@ const LabelDateInput: React.FC<IDateInputProps> = ({
                         dateAdapter={AdapterDayjs}
                     >
                         <DatePicker
-                            value={inputValue}
+                            value={value}
                             format="DD-MM-YYYY"
                             maxDate={dayjs()}
                             onOpen={handleDatePickerFocus}
@@ -85,7 +83,7 @@ const LabelDateInput: React.FC<IDateInputProps> = ({
                                 textField: {
                                     placeholder: "DD/MM/RRRR",
                                     size: "small",
-                                    error: errorText !== "" ? true : false,
+                                    error: !!errorText,
                                     helperText: errorText,
                                     onFocus: handleDatePickerFocus,
                                     onBlur: handleDatePickerBlur,

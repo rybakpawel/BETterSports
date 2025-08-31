@@ -1,7 +1,9 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { Controller, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
     Box,
     Button,
@@ -20,8 +22,18 @@ import LabelAutocompleteInput from "../form/LabelAutocompleteInput";
 import LabelColorInput from "../form/LabelColorInput";
 import { getSignedURL } from "@/helpers/getSignedUrl";
 import { computeSHA256 } from "@/helpers/computeSHA256";
-import { z } from "zod";
 import { signOut } from "next-auth/react";
+import ApiResponseAlert, {
+    ApiResponse,
+} from "@/components/alerts/ApiResponseAlert";
+import {
+    accountDataValidation,
+    AccountDataType,
+} from "@/validation/common/accountDataValidation";
+import {
+    changePasswordValidation,
+    ChangePasswordType,
+} from "@/validation/common/changePasswordValidation";
 
 interface ISport {
     id: number;
@@ -34,7 +46,6 @@ interface ITeam {
 }
 
 interface IAccountDataFormProps {
-    userId: string | undefined;
     username: string;
     profileImageId: number;
     profileImageName: string;
@@ -51,22 +62,7 @@ interface IAccountDataFormProps {
     sportsList: ISport[];
 }
 
-interface IAccountSettingsForm {
-    username: string;
-    favouriteSport: number;
-    favouriteTeam: number;
-    primaryColor: string;
-    secondaryColor: string;
-}
-
-interface IChangePasswordForm {
-    oldPassword: string;
-    newPassword: string;
-    confirmPassword: string;
-}
-
 const AccountDataForm: React.FC<IAccountDataFormProps> = ({
-    userId,
     username,
     profileImageId,
     profileImageName,
@@ -83,20 +79,46 @@ const AccountDataForm: React.FC<IAccountDataFormProps> = ({
     sportsList,
 }) => {
     const router = useRouter();
+    const [apiResponse, setApiResponse] = useState<ApiResponse | null>(null);
+    const [isApiResponseVisible, setIsApiResponseVisible] = useState(false);
+
+    const {
+        register: accountDataRegister,
+        control: accountDataControl,
+        handleSubmit: handleSubmitAccountData,
+        formState: { errors: accountDataFormErrors },
+    } = useForm<AccountDataType>({
+        resolver: zodResolver(accountDataValidation),
+        defaultValues: {
+            username,
+            favouriteSport: favouriteSportId,
+            favouriteTeam: favouriteTeamId,
+            primaryColor,
+            secondaryColor,
+        },
+    });
+
+    const {
+        register: changePasswordRegister,
+        control: changePasswordControl,
+        handleSubmit: handleSubmitChangePassword,
+        reset: resetChangePasswordForm,
+        formState: { errors: changePasswordFormErrors },
+    } = useForm<ChangePasswordType>({
+        resolver: zodResolver(changePasswordValidation),
+        defaultValues: {
+            oldPassword: "",
+            newPassword: "",
+            confirmPassword: "",
+        },
+    });
+
     const [isLoadingAccountDataForm, setIsLoadingAccountDataForm] =
         useState<boolean>(false);
     const [isLoadingChangePasswordForm, setIsLoadingChangePasswordForm] =
         useState<boolean>(false);
     const [isLoadingDeleteAccountForm, setIsLoadingDeleteAccountForm] =
         useState<boolean>(false);
-    const [accountSettingsForm, setAccountSettingsForm] =
-        useState<IAccountSettingsForm>({
-            username,
-            favouriteSport: favouriteSportId,
-            favouriteTeam: favouriteTeamId,
-            primaryColor: primaryColor,
-            secondaryColor: secondaryColor,
-        });
     const [selectedFiles, setSelectedFiles] = useState<{
         [key: string]: File | null;
     }>({
@@ -111,34 +133,9 @@ const AccountDataForm: React.FC<IAccountDataFormProps> = ({
         favouriteTeamName ? favouriteTeamName : ""
     );
     const [teamsList, setTeamsList] = useState<ITeam[]>([]);
-    const [error, setError] = useState({
-        username: "",
-        profileImage: "",
-        backgroundImage: "",
-        favouriteSport: "",
-        favouriteTeam: "",
-        primaryColor: "",
-        secondaryColor: "",
-    });
-    const [changePasswordError, setChangePasswordError] =
-        useState<IChangePasswordForm>({
-            oldPassword: "",
-            newPassword: "",
-            confirmPassword: "",
-        });
-    const [isUpdateMessageVisible, setIsUpdateMessageVisible] =
-        useState<boolean>(false);
     const [openChangePasswordModal, setOpenChangePasswordModal] =
         useState<boolean>(false);
     const [openDeleteAccountModal, setOpenDeleteAccountModal] =
-        useState<boolean>(false);
-    const [changePasswordForm, setChangePasswordForm] =
-        useState<IChangePasswordForm>({
-            oldPassword: "",
-            newPassword: "",
-            confirmPassword: "",
-        });
-    const [changePasswordFormSaved, setChangePasswordFormSaved] =
         useState<boolean>(false);
 
     useEffect(() => {
@@ -154,13 +151,9 @@ const AccountDataForm: React.FC<IAccountDataFormProps> = ({
                 }
             );
 
-            if (!response.ok) {
-                throw new Error("Błąd podczas wczytywania drużyn");
-            }
+            const result = await response.json();
 
-            const res = await response.json();
-
-            if (res.teams) setTeamsList(res.teams);
+            if (result.data) setTeamsList(result.data.teams);
             else setTeamsList([]);
 
             setIsLoadingTeams(false);
@@ -172,12 +165,13 @@ const AccountDataForm: React.FC<IAccountDataFormProps> = ({
     const handleChangePasswordModal = (state: boolean) => {
         if (isLoadingAccountDataForm) return;
         setOpenChangePasswordModal(state);
-        setChangePasswordFormSaved(false);
-        setChangePasswordForm({
-            oldPassword: "",
-            newPassword: "",
-            confirmPassword: "",
-        });
+        if (state) {
+            resetChangePasswordForm({
+                oldPassword: "",
+                newPassword: "",
+                confirmPassword: "",
+            });
+        }
     };
 
     const handleDeleteAccountModal = (state: boolean) => {
@@ -189,8 +183,7 @@ const AccountDataForm: React.FC<IAccountDataFormProps> = ({
         setSelectedFiles((prev) => ({ ...prev, [inputId]: file }));
     };
 
-    const handleSubmitForm = async (e: FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
+    const handleSubmitAccountDataForm = async (data: AccountDataType) => {
         setIsLoadingAccountDataForm(true);
 
         let profileImage = {
@@ -260,39 +253,7 @@ const AccountDataForm: React.FC<IAccountDataFormProps> = ({
             favouriteTeam,
             primaryColor,
             secondaryColor,
-        } = accountSettingsForm;
-
-        // ! Walidacja
-        // const validationResult = settingsUserDataClientValidation(
-        //     username,
-        //     password,
-        // );
-
-        // if (!validationResult.success) {
-        //     let newErrors = {
-        //         username: "",
-        //         password: "",
-        //     };
-
-        //     validationResult.error.issues.forEach((error) => {
-        //         const fieldName = error.path[0];
-        //         const errorMessage = error.message;
-        //         if (newErrors[fieldName as keyof IAccountSettingsForm]) return;
-        //         newErrors[fieldName as keyof IAccountSettingsForm] = errorMessage;
-        //     });
-
-        //     setError(newErrors);
-        //     setIsLoading(false);
-        // } else {
-        setError({
-            username: "",
-            profileImage: "",
-            backgroundImage: "",
-            favouriteSport: "",
-            favouriteTeam: "",
-            primaryColor: "",
-            secondaryColor: "",
-        });
+        } = data;
 
         const body = {
             username,
@@ -305,7 +266,7 @@ const AccountDataForm: React.FC<IAccountDataFormProps> = ({
         };
 
         const response = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/update-account-data/${userId}`,
+            `${process.env.NEXT_PUBLIC_API_URL}/update-account-data`,
             {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -313,121 +274,73 @@ const AccountDataForm: React.FC<IAccountDataFormProps> = ({
             }
         );
 
-        const data = await response.json();
+        const result = await response.json();
 
-        // if (!data.errorMessage) router.push(`/verification?id=${data.res}`); // TODO do poprawy podczas prac nad obsługą błędów
-
-        console.log(data); // TODO do poprawy podczas prac nad obsługą błędow
-
+        setApiResponse(result);
+        setIsApiResponseVisible(true);
         setIsLoadingAccountDataForm(false);
-        setIsUpdateMessageVisible(true);
 
         if (profileImage.newUrl || backgroundImage.newUrl) {
             router.refresh();
         }
     };
 
-    const handleSubmitChangePasswordForm = async (
-        e: FormEvent<HTMLFormElement>
-    ) => {
-        e.preventDefault();
+    const handleSubmitChangePasswordForm = async (data: ChangePasswordType) => {
         setIsLoadingChangePasswordForm(true);
 
-        // client validation - do przemyślenia czy nie przenieść walidacji klienckich do osobnego katalogu
-        const validationSchema = z
-            .object({
-                oldPassword: z.string().min(1, { message: "Uzupełnij pole." }),
-                newPassword: z
-                    .string()
-                    .min(8, {
-                        message: "Hasło musi zawierać co najmniej 8 znaków.",
-                    })
-                    .regex(new RegExp(".*[A-Z].*"), {
-                        message: "Hasło musi zawierać wielką literę.",
-                    })
-                    .regex(new RegExp(".*\\d.*"), {
-                        message: "Hasło musi zawierać cyfrę.",
-                    })
-                    .regex(
-                        new RegExp(
-                            ".*[`~<>?,./!@#$%^&*()\\-_+=\"'|{}\\[\\];:\\\\].*"
-                        ),
-                        { message: "Hasło musi zawierać znak specjalny." }
-                    ),
-                confirmPassword: z
-                    .string()
-                    .min(1, { message: "Uzupełnij pole." }),
-            })
-            .superRefine(({ confirmPassword, newPassword }, ctx) => {
-                if (confirmPassword !== newPassword) {
-                    ctx.addIssue({
-                        code: "custom",
-                        path: ["confirmPassword"],
-                        message: "Hasła nie są takie same.",
-                    });
-                }
-            });
-        const validationResult = validationSchema.safeParse(changePasswordForm);
+        const { oldPassword, newPassword, confirmPassword } = data;
 
-        if (!validationResult.success) {
-            let newErrors = {
+        const body = {
+            oldPassword,
+            newPassword,
+            confirmPassword,
+        };
+
+        const response = await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL}/change-password`,
+            {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(body),
+            }
+        );
+
+        const result = await response.json();
+
+        setApiResponse(result);
+        setIsApiResponseVisible(true);
+        setIsLoadingChangePasswordForm(false);
+
+        if (result.success) {
+            resetChangePasswordForm({
                 oldPassword: "",
                 newPassword: "",
                 confirmPassword: "",
-            };
-
-            validationResult.error.issues.forEach((error) => {
-                const fieldName = error.path[0];
-                const errorMessage = error.message;
-                if (newErrors[fieldName as keyof IChangePasswordForm]) return;
-                newErrors[fieldName as keyof IChangePasswordForm] =
-                    errorMessage;
             });
-
-            setChangePasswordError(newErrors);
-            setIsLoadingChangePasswordForm(false);
-        } else {
-            const { oldPassword, newPassword } = changePasswordForm;
-
-            const body = {
-                oldPassword,
-                newPassword,
-                userId,
-            };
-
-            const response = await fetch(
-                `${process.env.NEXT_PUBLIC_API_URL}/reset-password`,
-                {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(body),
-                }
-            );
-
-            const data = await response.json();
-
-            // TODO obsługa błędów! walidacja jest zrobiona, tylko wyświetlić dobrze komunikat + dopasować do nowego systemu obsługi błędów
-            if (data.error) {
-            } else {
-                setChangePasswordFormSaved(true);
-            }
-
-            setIsLoadingChangePasswordForm(false);
+            setOpenChangePasswordModal(false);
         }
     };
 
-    const handleSubmitDeleteAccountForm = async (
-        e: FormEvent<HTMLFormElement>
-    ) => {
-        e.preventDefault();
+    const handleSubmitDeleteAccountForm = async () => {
         setIsLoadingDeleteAccountForm(true);
 
-        await fetch(`${process.env.NEXT_PUBLIC_API_URL}/delete-account`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-        });
+        const response = await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL}/delete-account`,
+            {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+            }
+        );
 
-        signOut();
+        const result = await response.json();
+
+        setApiResponse(result);
+        setIsApiResponseVisible(true);
+        setIsLoadingDeleteAccountForm(false);
+
+        if (result.success) {
+            signOut();
+        }
     };
 
     return (
@@ -444,17 +357,17 @@ const AccountDataForm: React.FC<IAccountDataFormProps> = ({
                     </Typography>
                     <Box sx={{ mt: { xs: 1, md: 0 } }}>
                         <LoadingButton
-                            type="submit"
+                            type="button"
                             variant="outlined"
-                            loading={isLoadingAccountDataForm}
+                            disabled={isLoadingAccountDataForm}
                             onClick={() => handleChangePasswordModal(true)}
                         >
                             Zmień hasło
                         </LoadingButton>
                         <LoadingButton
-                            type="submit"
+                            type="button"
                             variant="outlined"
-                            loading={isLoadingAccountDataForm}
+                            disabled={isLoadingAccountDataForm}
                             onClick={() => handleDeleteAccountModal(true)}
                             sx={{ ml: 1 }}
                         >
@@ -464,18 +377,12 @@ const AccountDataForm: React.FC<IAccountDataFormProps> = ({
                 </Box>
 
                 <Divider sx={{ my: 2 }} />
-                <Typography
-                    component="span"
-                    sx={{
-                        display: isUpdateMessageVisible ? "block" : "none",
-                        mb: 2,
-                        textAlign: "center",
-                        color: "primary.main",
-                    }}
+                <Box
+                    component="form"
+                    onSubmit={handleSubmitAccountData(
+                        handleSubmitAccountDataForm
+                    )}
                 >
-                    Zaktualizowano dane!
-                </Typography>
-                <Box component="form" onSubmit={handleSubmitForm}>
                     <Box sx={{ display: { xs: "block", md: "flex" } }}>
                         <Box sx={{ flexBasis: "50%" }}>
                             <LabelImageInput
@@ -510,92 +417,97 @@ const AccountDataForm: React.FC<IAccountDataFormProps> = ({
                     <LabelTextInput
                         label="Nazwa użytkownika"
                         inputId="username"
-                        inputName="username"
-                        inputValue={accountSettingsForm.username}
-                        errorText={error.username}
-                        onChange={(e) =>
-                            setAccountSettingsForm((prevState) => ({
-                                ...prevState,
-                                username: e.target.value,
-                            }))
-                        }
-                    />
-                    <LabelSelectInput
-                        label="Ulubiony sport"
-                        inputId="favouriteSport"
-                        inputName="favouriteSport"
-                        inputValue={accountSettingsForm.favouriteSport?.toString()}
-                        errorText={error.favouriteSport}
-                        dataList={sportsList}
-                        onChange={(e) =>
-                            setAccountSettingsForm((prevState) => ({
-                                ...prevState,
-                                favouriteSport: e.target.value
-                                    ? Number(e.target.value)
-                                    : 0,
-                            }))
-                        }
-                    />
-                    <LabelAutocompleteInput
-                        label="Ulubiona drużyna"
-                        inputId="favouriteTeam"
-                        inputName="favouriteTeam"
-                        inputValue={teamInput}
-                        defaultId={defaultTeamId}
-                        errorText={error.favouriteTeam}
-                        dataList={teamsList}
-                        isLoadingData={isLoadingTeams}
-                        onChange={(e, newValue) => {
-                            setAccountSettingsForm((prevState) => ({
-                                ...prevState,
-                                favouriteTeam: newValue
-                                    ? Number(newValue.id)
-                                    : 0,
-                            }));
-                        }}
-                        onInputChange={(event, newInputValue, reason) => {
-                            setTeamInput(newInputValue);
+                        errorText={accountDataFormErrors.username?.message}
+                        textFieldProps={{
+                            ...accountDataRegister("username"),
                         }}
                     />
-
-                    <LabelColorInput
-                        label="Kolor podstawowy"
-                        inputId="primaryColor"
-                        inputName="primaryColor"
-                        inputValue={
-                            accountSettingsForm.primaryColor
-                                ? accountSettingsForm.primaryColor
-                                : "#FFFFFF"
-                        }
-                        onChange={(color) => {
-                            setAccountSettingsForm((prevState) => ({
-                                ...prevState,
-                                primaryColor: color,
-                            }));
-                        }}
+                    <Controller
+                        name="favouriteSport"
+                        control={accountDataControl}
+                        render={({ field }) => (
+                            <LabelSelectInput
+                                label="Ulubiony sport"
+                                inputId="favouriteSport"
+                                value={field.value?.toString() ?? ""}
+                                errorText={
+                                    accountDataFormErrors.favouriteSport
+                                        ?.message
+                                }
+                                dataList={sportsList}
+                                onChange={(event) => {
+                                    field.onChange(Number(event.target.value));
+                                }}
+                            />
+                        )}
                     />
-                    <LabelColorInput
-                        label="Kolor drugorzędny"
-                        inputId="secondaryColor"
-                        inputName="secondaryColor"
-                        inputValue={
-                            accountSettingsForm.secondaryColor
-                                ? accountSettingsForm.secondaryColor
-                                : "#FFFFFF"
-                        }
-                        onChange={(color) => {
-                            setAccountSettingsForm((prevState) => ({
-                                ...prevState,
-                                secondaryColor: color,
-                            }));
-                        }}
+                    <Controller
+                        name="favouriteTeam"
+                        control={accountDataControl}
+                        render={({ field, fieldState }) => (
+                            <LabelAutocompleteInput
+                                label="Ulubiona drużyna"
+                                inputId="favouriteTeam"
+                                inputValue={teamInput}
+                                defaultId={defaultTeamId}
+                                errorText={fieldState.error?.message}
+                                dataList={teamsList}
+                                isLoadingData={isLoadingTeams}
+                                onChange={(event, newValue) => {
+                                    field.onChange(newValue ? newValue.id : 0);
+                                }}
+                                onInputChange={(
+                                    event,
+                                    newInputValue,
+                                    reason
+                                ) => {
+                                    setTeamInput(newInputValue);
+                                }}
+                            />
+                        )}
+                    />
+                    <Controller
+                        name="primaryColor"
+                        control={accountDataControl}
+                        render={({ field }) => (
+                            <LabelColorInput
+                                label="Kolor podstawowy"
+                                inputId="primaryColor"
+                                inputName="primaryColor"
+                                inputValue={field.value ?? "#FFFFFF"}
+                                errorText={
+                                    accountDataFormErrors.primaryColor?.message
+                                }
+                                onChange={(color) => {
+                                    field.onChange(color);
+                                }}
+                            />
+                        )}
+                    />
+                    <Controller
+                        name="secondaryColor"
+                        control={accountDataControl}
+                        render={({ field }) => (
+                            <LabelColorInput
+                                label="Kolor drugorzędny"
+                                inputId="secondaryColor"
+                                inputName="secondaryColor"
+                                inputValue={field.value ?? "#FFFFFF"}
+                                errorText={
+                                    accountDataFormErrors.secondaryColor
+                                        ?.message
+                                }
+                                onChange={(color) => {
+                                    field.onChange(color);
+                                }}
+                            />
+                        )}
                     />
                     <Box
                         sx={{
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "flex-end",
-                            // mb: error.password ? 0 : 2, // ! error.password do zmiany na error.secondaryColor
                         }}
                     >
                         <LoadingButton
@@ -613,125 +525,100 @@ const AccountDataForm: React.FC<IAccountDataFormProps> = ({
             </Box>
             <Modal
                 open={openChangePasswordModal}
-                onClose={() => handleChangePasswordModal(false)}
+                onClose={() =>
+                    !isLoadingAccountDataForm &&
+                    handleChangePasswordModal(false)
+                }
                 aria-labelledby="modal-modal-title"
                 aria-describedby="modal-modal-description"
                 data-size="medium"
             >
                 <Card>
                     <CardContent sx={{ m: 3 }}>
-                        {!changePasswordFormSaved ? (
-                            <>
-                                <Typography variant="h6" component="h3">
-                                    Ustawianie nowego hasła
-                                </Typography>
+                        <>
+                            <Typography variant="h6" component="h3">
+                                Ustawianie nowego hasła
+                            </Typography>
+                            <Box
+                                component="form"
+                                sx={{ mt: 5 }}
+                                onSubmit={handleSubmitChangePassword(
+                                    handleSubmitChangePasswordForm
+                                )}
+                            >
+                                <LabelTextInput
+                                    label="Stare hasło"
+                                    inputId="oldPassword"
+                                    errorText={
+                                        changePasswordFormErrors.oldPassword
+                                            ?.message
+                                    }
+                                    isPassword={true}
+                                    textFieldProps={{
+                                        ...changePasswordRegister(
+                                            "oldPassword"
+                                        ),
+                                    }}
+                                />
+                                <LabelTextInput
+                                    label="Nowe hasło"
+                                    inputId="newPassword"
+                                    errorText={
+                                        changePasswordFormErrors.newPassword
+                                            ?.message
+                                    }
+                                    isPassword={true}
+                                    textFieldProps={{
+                                        ...changePasswordRegister(
+                                            "newPassword"
+                                        ),
+                                    }}
+                                />
+                                <LabelTextInput
+                                    label="Potwierdź hasło"
+                                    inputId="confirmPassword"
+                                    errorText={
+                                        changePasswordFormErrors.confirmPassword
+                                            ?.message
+                                    }
+                                    isPassword={true}
+                                    textFieldProps={{
+                                        ...changePasswordRegister(
+                                            "confirmPassword"
+                                        ),
+                                    }}
+                                />
                                 <Box
-                                    component="form"
-                                    sx={{ mt: 5 }}
-                                    onSubmit={handleSubmitChangePasswordForm}
+                                    sx={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "flex-end",
+                                    }}
                                 >
-                                    <LabelTextInput
-                                        label="Stare hasło"
-                                        inputId="oldPassword"
-                                        inputName="oldPassword"
-                                        inputValue={
-                                            changePasswordForm.oldPassword
-                                        }
-                                        errorText={
-                                            changePasswordError.oldPassword
-                                        }
-                                        isPassword={true}
-                                        onChange={(e) =>
-                                            setChangePasswordForm(
-                                                (prevState) => ({
-                                                    ...prevState,
-                                                    oldPassword: e.target.value,
-                                                })
-                                            )
-                                        }
-                                    />
-                                    <LabelTextInput
-                                        label="Nowe hasło"
-                                        inputId="newPassword"
-                                        inputName="newPassword"
-                                        inputValue={
-                                            changePasswordForm.newPassword
-                                        }
-                                        errorText={
-                                            changePasswordError.newPassword
-                                        }
-                                        isPassword={true}
-                                        onChange={(e) =>
-                                            setChangePasswordForm(
-                                                (prevState) => ({
-                                                    ...prevState,
-                                                    newPassword: e.target.value,
-                                                })
-                                            )
-                                        }
-                                    />
-                                    <LabelTextInput
-                                        label="Potwierdź hasło"
-                                        inputId="confirmPassword"
-                                        inputName="confirmPassword"
-                                        inputValue={
-                                            changePasswordForm.confirmPassword
-                                        }
-                                        errorText={
-                                            changePasswordError.confirmPassword
-                                        }
-                                        isPassword={true}
-                                        onChange={(e) =>
-                                            setChangePasswordForm(
-                                                (prevState) => ({
-                                                    ...prevState,
-                                                    confirmPassword:
-                                                        e.target.value,
-                                                })
-                                            )
-                                        }
-                                    />
-                                    <Box
+                                    <LoadingButton
+                                        type="submit"
+                                        variant="contained"
+                                        loading={isLoadingChangePasswordForm}
                                         sx={{
-                                            display: "flex",
-                                            alignItems: "center",
-                                            justifyContent: "flex-end",
+                                            flexBasis: {
+                                                xs: "100%",
+                                                md: "auto",
+                                            },
                                         }}
                                     >
-                                        <LoadingButton
-                                            type="submit"
-                                            variant="contained"
-                                            loading={
-                                                isLoadingChangePasswordForm
-                                            }
-                                            sx={{
-                                                flexBasis: {
-                                                    xs: "100%",
-                                                    md: "auto",
-                                                },
-                                            }}
-                                        >
-                                            Zapisz
-                                        </LoadingButton>
-                                    </Box>
+                                        Zapisz
+                                    </LoadingButton>
                                 </Box>
-                            </>
-                        ) : (
-                            <>
-                                <Typography variant="h6" component="h3">
-                                    Sukces!
-                                </Typography>
-                                <Typography variant="body1" sx={{ mt: 2 }}>
-                                    Twoje hasło zostało zaktualizowane.
-                                </Typography>
-                            </>
-                        )}
+                            </Box>
+                        </>
                     </CardContent>
                 </Card>
             </Modal>
             <Modal
                 open={openDeleteAccountModal}
-                onClose={() => handleDeleteAccountModal(false)}
+                onClose={() =>
+                    !isLoadingAccountDataForm && handleDeleteAccountModal(false)
+                }
                 aria-labelledby="modal-modal-title"
                 aria-describedby="modal-modal-description"
                 data-size="small"
@@ -742,11 +629,7 @@ const AccountDataForm: React.FC<IAccountDataFormProps> = ({
                             <Typography variant="h6" component="h3">
                                 Usuwanie konta
                             </Typography>
-                            <Box
-                                component="form"
-                                sx={{ mt: 5 }}
-                                onSubmit={handleSubmitDeleteAccountForm}
-                            >
+                            <Box sx={{ mt: 5 }}>
                                 <Typography variant="body1" sx={{ mt: 2 }}>
                                     Czy na pewno chcesz usunąć swoje konto?
                                 </Typography>
@@ -764,9 +647,9 @@ const AccountDataForm: React.FC<IAccountDataFormProps> = ({
                                     }}
                                 >
                                     <LoadingButton
-                                        type="submit"
                                         variant="contained"
                                         loading={isLoadingDeleteAccountForm}
+                                        onClick={handleSubmitDeleteAccountForm}
                                         sx={{
                                             mr: 1,
                                             flexBasis: {
@@ -779,6 +662,7 @@ const AccountDataForm: React.FC<IAccountDataFormProps> = ({
                                     </LoadingButton>
                                     <Button
                                         variant="outlined"
+                                        disabled={isLoadingDeleteAccountForm}
                                         sx={{
                                             flexBasis: {
                                                 xs: "50%",
@@ -797,6 +681,11 @@ const AccountDataForm: React.FC<IAccountDataFormProps> = ({
                     </CardContent>
                 </Card>
             </Modal>
+            <ApiResponseAlert
+                open={isApiResponseVisible}
+                onClose={() => setIsApiResponseVisible(false)}
+                response={apiResponse}
+            />
         </>
     );
 };

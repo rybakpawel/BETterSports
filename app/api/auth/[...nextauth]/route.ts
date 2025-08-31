@@ -1,7 +1,12 @@
 import NextAuth, { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { getUser } from "@/core/User";
-import { compare } from "bcryptjs";
+import { getSystemUser, getUser } from "@/core/User";
+import { ApiError, ApiResponse } from "@/helpers/errorAndResponseHandlers";
+import { createLog } from "@/core/Log";
+import { LogLevel } from "@prisma/client";
+import { loginUserServerValidation } from "@/validation/server/loginUserServerValidation";
+
+const LOCATION = "app/api/auth/[...nextauth]";
 
 export const authOptions: NextAuthOptions = {
     session: {
@@ -12,61 +17,80 @@ export const authOptions: NextAuthOptions = {
             type: "credentials",
             credentials: {},
             async authorize(credentials, req) {
-                // Log operation
+                try {
+                    const { email, password } = credentials as {
+                        email: string;
+                        password: string;
+                    };
 
-                const { email, password } = credentials as {
-                    email: string;
-                    password: string;
-                };
+                    await loginUserServerValidation({ email, password });
 
-                if (!email) {
-                    // res.error = "Brak e-maila użytkownika."; // do obsłużenia podczas systemu logowania i błędów, stworzyć funkcję w folderze Validation
-                    return null;
-                }
+                    const userRecord = await getUser({ email });
 
-                if (!password) {
-                    // res.error = "Brak hasła użytkownika."; // do obsłużenia podczas systemu logowania i błędów, stworzyć funkcję w folderze Validation
-                    return null;
-                }
+                    if (!userRecord) {
+                        return null; // nie ma prawa się wydarzyć, bo sprawdzane jest w walidacji, ale bez tego authorize() robi problem
+                    }
 
-                const userRecord = await getUser({ email });
+                    const user = {
+                        id: userRecord?.id.toString() as string,
+                        email,
+                        username: userRecord?.username,
+                        isActive: userRecord?.isActive,
+                    };
 
-                if (!userRecord) {
-                    // res.error = "Nie znaleziono użytkownika z podanym adresem e-mail."; // do obsłużenia podczas systemu logowania i błędów, stworzyć funkcję w folderze Validation
-                    return null;
-                }
+                    const systemUser = await getSystemUser();
 
-                if (!userRecord.isActive) {
-                    return null;
-                }
+                    if (systemUser) {
+                        await createLog({
+                            level: LogLevel.INFO,
+                            description:
+                                "Zakończenie operacji biznesowej logowania użytkownika",
+                            location: LOCATION,
+                            createdById: systemUser.id,
+                            updatedById: systemUser.id,
+                        });
+                    }
 
-                // Technical actions
-
-                // Rest of logic
-                const hashedPassword = userRecord?.password as string;
-
-                const correctPassword = await new Promise((resolve, reject) => {
-                    compare(password, hashedPassword, function (err, result) {
-                        if (err) {
-                            reject(err);
-                        } else {
-                            resolve(result);
+                    return user;
+                } catch (error) {
+                    const systemUser = await getSystemUser();
+                    if (error instanceof ApiError) {
+                        if (systemUser) {
+                            await createLog({
+                                level: LogLevel.ERROR,
+                                description: error.message,
+                                location: LOCATION,
+                                createdById: systemUser.id,
+                                updatedById: systemUser.id,
+                            });
                         }
-                    });
-                });
+                        throw new Error(
+                            JSON.stringify(
+                                new ApiResponse(false, 400, error.message)
+                            )
+                        );
+                    }
 
-                if (!correctPassword) {
-                    // res.error = "Nieprawidłowe hasło."; // do obsłużenia podczas systemu logowania i błędów, stworzyć funkcję w folderze Validation
-                    return null;
+                    if (systemUser) {
+                        await createLog({
+                            level: LogLevel.ERROR,
+                            description:
+                                "Wewnętrzny błąd serwera podczas tworzenia użytkownika",
+                            location: LOCATION,
+                            createdById: systemUser.id,
+                            updatedById: systemUser.id,
+                        });
+                    }
+                    throw new Error(
+                        JSON.stringify(
+                            new ApiResponse(
+                                false,
+                                400,
+                                "Wewnętrzny błąd serwera"
+                            )
+                        )
+                    );
                 }
-
-                const user = {
-                    id: userRecord.id.toString() as string,
-                    email,
-                    username: userRecord.username,
-                    isActive: userRecord.isActive,
-                };
-                return user;
             },
         }),
     ],

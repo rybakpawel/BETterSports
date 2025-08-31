@@ -1,5 +1,7 @@
 import prisma from "@/prisma";
+import { Role } from "@prisma/client";
 import { PersonKey, IPersonUpdate } from "./Person";
+import { CoreError } from "@/helpers/errorAndResponseHandlers";
 
 export interface IUser {
     id: number;
@@ -104,7 +106,27 @@ export async function getUser(
 
         return record;
     } catch (error) {
-        console.error(error);
+        throw new CoreError("Wystąpił błąd podczas pobierania użytkownika");
+    }
+}
+
+export async function getSystemUser() {
+    try {
+        const record = await prisma.user.findFirst({
+            where: {
+                role: Role.SYSTEM,
+            },
+        });
+
+        if (!record) {
+            throw new CoreError("Nie znaleziono użytkownika systemowego");
+        }
+
+        return record;
+    } catch (error) {
+        throw new CoreError(
+            "Wystąpił błąd podczas pobierania użytkownika systemowego"
+        );
     }
 }
 
@@ -132,13 +154,10 @@ export async function updateUserAndPersonByUserId(
                 data: personData,
             }),
         ]);
-
-        console.log("User and Person updated successfully:", {
-            updatedUser,
-            updatedPerson,
-        }); // do poprawy przy obsłudze błędów (jak wszystkie funkcje tutaj)
     } catch (error) {
-        console.error(error);
+        throw new CoreError(
+            "Wystąpił błąd podczas aktualizacji użytkownika i osoby na podstawie identyfikatora użytkownika"
+        );
     }
 }
 
@@ -151,7 +170,7 @@ export async function createUser(user: Partial<IUser>) {
 
         return { record };
     } catch (error) {
-        console.error(error);
+        throw new CoreError("Wystąpił błąd podczas tworzenia użytkownika");
     }
 }
 
@@ -170,24 +189,6 @@ export async function updateUser(
 
         return { record };
     } catch (error) {
-        console.error(error);
-    }
-}
-
-// 1 usage
-export async function validateExistingUser(
-    email: string,
-    username: string
-): Promise<IUser | undefined> {
-    try {
-        const record = await prisma.user.findFirst({
-            where: {
-                OR: [{ username }, { email }],
-            },
-        });
-
-        return record;
-    } catch (error) {
-        console.error(error);
+        throw new CoreError("Wystąpił błąd podczas aktualizacji użytkownika");
     }
 }

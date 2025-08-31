@@ -281,14 +281,16 @@ model Location {
 
 model Log {
   id          Int      @id @default(autoincrement())
+  level       LogLevel
+  errorType   ErrorType?
   description String
+  location    String
+  data        Json?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  moduleId    Int
   createdById Int
   updatedById Int
   createdBy   User     @relation("LogCreatedBy", fields: [createdById], references: [id])
-  module      Module   @relation(fields: [moduleId], references: [id])
   updatedBy   User     @relation("LogUpdatedBy", fields: [updatedById], references: [id])
 }
 
@@ -315,18 +317,6 @@ model Message {
   createdBy      User         @relation("MessageCreatedBy", fields: [createdById], references: [id])
   updatedBy      User         @relation("MessageUpdatedBy", fields: [updatedById], references: [id])
   userToFriend   UserToFriend @relation(fields: [userToFriendId], references: [id])
-}
-
-model Module {
-  id          Int      @id @default(autoincrement())
-  name        String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  createdById Int
-  updatedById Int
-  log         Log[]
-  createdBy   User     @relation("ModuleCreatedBy", fields: [createdById], references: [id])
-  updatedBy   User     @relation("ModuleUpdatedBy", fields: [updatedById], references: [id])
 }
 
 model Person {
@@ -419,6 +409,7 @@ model User {
   username                    String               @unique
   password                    String
   isActive                    Boolean              @default(false)
+  role                        Role                 @default(USER)
   createdAt                   DateTime             @default(now())
   updatedAt                   DateTime             @updatedAt
   personId                    Int                  @unique
@@ -474,8 +465,6 @@ model User {
   message                     Message[]
   messageCreatedBy            Message[]            @relation("MessageCreatedBy")
   messageUpdatedBy            Message[]            @relation("MessageUpdatedBy")
-  moduleCreatedBy             Module[]             @relation("ModuleCreatedBy")
-  moduleUpdatedBy             Module[]             @relation("ModuleUpdatedBy")
   personCreatedBy             Person[]             @relation("PersonCreatedBy")
   personUpdatedBy             Person[]             @relation("PersonUpdatedBy")
   resetPasswordTokenCreatedBy ResetPasswordToken[] @relation("ResetPasswordTokenCreatedBy")
@@ -583,4 +572,23 @@ model UserToGadget {
 enum Gender {
   FEMALE
   MALE
+}
+
+enum LogLevel {
+  INFO
+  WARN
+  ERROR
+}
+
+enum ErrorType {
+  CLIENT
+  LOGIC
+  CORE
+  APP
+}
+
+enum Role {
+  SYSTEM
+  ADMIN
+  USER
 }

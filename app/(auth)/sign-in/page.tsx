@@ -1,9 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
-import { FormEvent, useState } from "react";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
     Box,
     Button,
@@ -21,76 +23,121 @@ import {
 } from "@mui/material";
 import { LoadingButton } from "@mui/lab";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
-
-interface ISignInForm {
-    email: string;
-    password: string;
-}
+import {
+    loginUserValidation,
+    LoginUserType,
+} from "@/validation/common/loginUserValidation";
+import {
+    forgotPasswordValidation,
+    ForgotPasswordType,
+} from "@/validation/common/forgotPasswordValidation";
+import ApiResponseAlert, {
+    ApiResponse,
+} from "@/components/alerts/ApiResponseAlert";
 
 export default function SignIn() {
-    const [isLoadingLoginForm, setIsLoadingLoginForm] =
-        useState<boolean>(false);
+    const [showPassword, setShowPassword] = useState<boolean>(false);
+    const [isLoadingLoginForm, setIsLoadingLoginForm] = useState(false);
     const [isLoadingForgotPasswordForm, setIsLoadingForgotPasswordForm] =
         useState<boolean>(false);
-    const [showPassword, setShowPassword] = useState<boolean>(false);
     const [openForgotPasswordModal, setOpenForgotPasswordModal] =
         useState<boolean>(false);
-    const [signInForm, setSignInForm] = useState<ISignInForm>({
-        email: "",
-        password: "",
+    const [apiResponse, setApiResponse] = useState<ApiResponse | null>(null);
+    const [isApiResponseVisible, setIsApiResponseVisible] = useState(false);
+    const {
+        register: loginRegister,
+        handleSubmit: handleSubmitLogin,
+        formState: { errors: loginErrors },
+    } = useForm<LoginUserType>({
+        resolver: zodResolver(loginUserValidation),
     });
-    const [forgotPasswordForm, setForgotPasswordForm] = useState<string>("");
-    const [forgotPasswordEmailSended, setForgotPasswordEmailSended] =
-        useState<boolean>(false);
-    const [error, setError] = useState<ISignInForm>({
-        email: "",
-        password: "",
+    const {
+        register: forgotPasswordRegister,
+        handleSubmit: handleForgotPasswordSubmit,
+        formState: { errors: forgotErrors },
+    } = useForm<ForgotPasswordType>({
+        resolver: zodResolver(forgotPasswordValidation),
     });
+
     const searchParams = useSearchParams();
+    const router = useRouter();
 
-    const handleForgotPasswordModal = (state: boolean) => {
-        if (isLoadingLoginForm) return;
-        setOpenForgotPasswordModal(state);
-        setForgotPasswordForm("");
-    };
+    useEffect(() => {
+        const passwordChanged = searchParams.get("changedpassword");
+        if (passwordChanged) {
+            setApiResponse({
+                success: true,
+                statusCode: 200,
+                message: "Hasło zostało pomyślnie zmienione",
+            });
+            setIsApiResponseVisible(true);
+        }
 
-    const handleSubmitForm = async (e: FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
+        const tokenExpired = searchParams.get("tokenexpired");
+        if (tokenExpired) {
+            setApiResponse({
+                success: false,
+                statusCode: 401,
+                message: "Token aktywacyjny wygasł",
+            });
+            setIsApiResponseVisible(true);
+        }
+
+        const accountActivated = searchParams.get("accountactivated");
+        if (accountActivated) {
+            setApiResponse({
+                success: true,
+                statusCode: 200,
+                message: "Twoje konto zostało aktywowane",
+            });
+            setIsApiResponseVisible(true);
+        }
+    }, [searchParams]);
+
+    const handleSubmitLoginForm = async (data: LoginUserType) => {
         setIsLoadingLoginForm(true);
 
-        const response = await signIn("credentials", {
-            email: signInForm.email,
-            password: signInForm.password,
-            callbackUrl: "/",
+        const res = await signIn("credentials", {
+            ...data,
+            redirect: false,
         });
 
-        if (!response?.ok) {
-            setIsLoadingLoginForm(false);
-            console.log("Nieprawidłowy e-mail lub hasło."); // TODO do poprawy podczas obsługi błędów
+        if (!res?.ok) {
+            if (res?.error) {
+                const parsedError = JSON.parse(res.error);
+
+                setApiResponse(parsedError);
+                setIsApiResponseVisible(true);
+            }
+        } else {
+            router.push("/");
         }
+
+        setIsLoadingLoginForm(false);
     };
 
-    const handleSubmitForgotPasswordForm = async (
-        e: FormEvent<HTMLFormElement>
-    ) => {
-        e.preventDefault();
+    const handleSubmitForgotPasswordForm = async (data: ForgotPasswordType) => {
         setIsLoadingForgotPasswordForm(true);
 
-        const response = await fetch(
+        const res = await fetch(
             `${process.env.NEXT_PUBLIC_API_URL}/forgot-password`,
             {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(forgotPasswordForm),
+                body: JSON.stringify(data.email),
             }
         );
 
-        const data = await response.json();
-
-        console.log(data);
+        const result = await res.json();
 
         setIsLoadingForgotPasswordForm(false);
-        setForgotPasswordEmailSended(true);
+
+        if (result.success) {
+            setOpenForgotPasswordModal(false);
+        }
+
+        setApiResponse(result);
+        setIsApiResponseVisible(true);
     };
 
     return (
@@ -111,48 +158,31 @@ export default function SignIn() {
                     <Box
                         component="form"
                         sx={{ my: 5 }}
-                        onSubmit={handleSubmitForm}
+                        onSubmit={handleSubmitLogin(handleSubmitLoginForm)}
                     >
-                        {searchParams.get("changedpassword") ? (
-                            <Typography
-                                sx={{
-                                    mb: 1,
-                                }}
-                            >
-                                Hasło poprawnie zmienione
-                            </Typography>
-                        ) : null}
                         <TextField
                             id="email"
-                            name="email"
                             label="E-mail"
-                            value={signInForm.email}
-                            onChange={(e) =>
-                                setSignInForm((prevState) => ({
-                                    ...prevState,
-                                    email: e.target.value,
-                                }))
-                            }
-                            error={error.email !== ""}
-                            helperText={error.email}
+                            {...loginRegister("email")}
+                            error={!!loginErrors.email}
+                            helperText={loginErrors.email?.message}
                             variant="outlined"
                             fullWidth
                             sx={{
-                                mb: error.email ? 0 : 2,
+                                mb: loginErrors.email ? 0 : 2,
                             }}
                         />
-                        <FormControl variant="outlined" fullWidth>
-                            <InputLabel
-                                htmlFor="password"
-                                error={error.password !== ""}
-                            >
-                                Hasło
-                            </InputLabel>
+                        <FormControl
+                            variant="outlined"
+                            fullWidth
+                            error={!!loginErrors.password}
+                        >
+                            <InputLabel htmlFor="password">Hasło</InputLabel>
                             <OutlinedInput
                                 id="password"
-                                name="password"
                                 label="Hasło"
                                 type={showPassword ? "text" : "password"}
+                                {...loginRegister("password")}
                                 endAdornment={
                                     <InputAdornment position="end">
                                         <IconButton
@@ -170,17 +200,9 @@ export default function SignIn() {
                                         </IconButton>
                                     </InputAdornment>
                                 }
-                                value={signInForm.password}
-                                onChange={(e) =>
-                                    setSignInForm((prevState) => ({
-                                        ...prevState,
-                                        password: e.target.value,
-                                    }))
-                                }
-                                error={error.password !== ""}
                             />
-                            <FormHelperText error={error.password !== ""}>
-                                {error.password !== "" ? error.password : ""}
+                            <FormHelperText>
+                                {loginErrors.password?.message}
                             </FormHelperText>
                         </FormControl>
                         <Box
@@ -199,7 +221,7 @@ export default function SignIn() {
                                         backgroundColor: "inherit",
                                     },
                                 }}
-                                onClick={() => handleForgotPasswordModal(true)}
+                                onClick={() => setOpenForgotPasswordModal(true)}
                             >
                                 Zapomniałem hasła
                             </Button>
@@ -223,67 +245,53 @@ export default function SignIn() {
             </Card>
             <Modal
                 open={openForgotPasswordModal}
-                onClose={() => handleForgotPasswordModal(false)}
+                onClose={() => setOpenForgotPasswordModal(false)}
                 aria-labelledby="modal-modal-title"
                 aria-describedby="modal-modal-description"
                 data-size="small"
             >
                 <Card>
                     <CardContent sx={{ m: 3 }}>
-                        {!forgotPasswordEmailSended ? (
-                            <>
-                                <Typography variant="h6" component="h3">
-                                    Zresetuj hasło
-                                </Typography>
-                                <Box
-                                    component="form"
-                                    sx={{ mt: 5 }}
-                                    onSubmit={handleSubmitForgotPasswordForm}
-                                >
-                                    <TextField
-                                        id="email"
-                                        name="email"
-                                        label="E-mail"
-                                        value={forgotPasswordForm}
-                                        onChange={(e) =>
-                                            setForgotPasswordForm(
-                                                e.target.value
-                                            )
-                                        }
-                                        error={error.email !== ""}
-                                        helperText={error.email}
-                                        variant="outlined"
-                                        fullWidth
-                                        sx={{
-                                            mb: error.email ? 0 : 2,
-                                        }}
-                                    />
-                                    <LoadingButton
-                                        type="submit"
-                                        fullWidth={true}
-                                        variant="contained"
-                                        loading={isLoadingForgotPasswordForm}
-                                        sx={{ mb: 2 }}
-                                    >
-                                        Wyślij na e-mail
-                                    </LoadingButton>
-                                </Box>
-                            </>
-                        ) : (
-                            <>
-                                <Typography variant="h6" component="h3">
-                                    Sukces!
-                                </Typography>
-                                <Typography variant="body1" sx={{ mt: 2 }}>
-                                    Wysłaliśmy na Twój e-mail link oraz
-                                    instrukcję umożliwiające ustawienie nowego
-                                    hasła na Twoje konto.
-                                </Typography>
-                            </>
-                        )}
+                        <Typography variant="h6" component="h3">
+                            Zresetuj hasło
+                        </Typography>
+                        <Box
+                            component="form"
+                            sx={{ mt: 5 }}
+                            onSubmit={handleForgotPasswordSubmit(
+                                handleSubmitForgotPasswordForm
+                            )}
+                        >
+                            <TextField
+                                id="forgot-email"
+                                label="E-mail"
+                                {...forgotPasswordRegister("email")}
+                                variant="outlined"
+                                fullWidth
+                                error={!!forgotErrors.email}
+                                helperText={forgotErrors.email?.message}
+                                sx={{
+                                    mb: forgotErrors.email ? 0 : 2,
+                                }}
+                            />
+                            <LoadingButton
+                                type="submit"
+                                fullWidth={true}
+                                variant="contained"
+                                loading={isLoadingForgotPasswordForm}
+                                sx={{ mb: 2 }}
+                            >
+                                Wyślij na e-mail
+                            </LoadingButton>
+                        </Box>
                     </CardContent>
                 </Card>
             </Modal>
+            <ApiResponseAlert
+                open={isApiResponseVisible}
+                onClose={() => setIsApiResponseVisible(false)}
+                response={apiResponse}
+            />
         </>
     );
 }

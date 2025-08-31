@@ -1,0 +1,23 @@
+export type UserSettings = {
+    email?: string;
+    username?: string;
+    profileImageId?: number;
+    profileImageName?: string;
+    profileImageUrl?: string;
+    backgroundImageId?: number;
+    backgroundImageName?: string;
+    backgroundImageUrl?: string;
+    favouriteSportId?: number;
+    isFavouriteSportIndividual?: boolean;
+    favouriteTeamId?: number;
+    favouriteTeamName?: string;
+    cityId?: number;
+    cityName?: string;
+    primaryColor?: string | null;
+    secondaryColor?: string | null;
+    name?: string | null;
+    lastName?: string | null;
+    birthDate?: Date | null;
+    gender?: string | null;
+    nationalityId?: number | null;
+};

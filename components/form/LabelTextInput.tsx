@@ -14,25 +14,23 @@ import { Visibility, VisibilityOff } from "@mui/icons-material";
 interface ITextInputProps {
     label: string;
     inputId: string;
-    inputName: string;
-    inputValue: string;
+    errorText?: string;
     isButton?: boolean;
     buttonText?: string;
-    errorText?: string;
     isPassword?: boolean;
-    onChange: React.ChangeEventHandler<HTMLInputElement>;
+    textFieldProps?: React.ComponentProps<typeof TextField>;
+    children?: React.ReactNode;
 }
 
 const LabelTextInput: React.FC<ITextInputProps> = ({
     label,
     inputId,
-    inputName,
-    inputValue,
+    errorText,
     isButton = false,
     buttonText = "",
-    errorText,
     isPassword = false,
-    onChange,
+    textFieldProps = {},
+    children,
 }) => {
     const [showPassword, setShowPassword] = useState<boolean>(false);
 
@@ -65,11 +63,8 @@ const LabelTextInput: React.FC<ITextInputProps> = ({
                 >
                     <TextField
                         id={inputId}
-                        name={inputName}
                         size="small"
                         type={isPassword && !showPassword ? "password" : "text"}
-                        value={inputValue}
-                        onChange={onChange}
                         error={!!errorText}
                         variant="outlined"
                         fullWidth
@@ -79,8 +74,10 @@ const LabelTextInput: React.FC<ITextInputProps> = ({
                                 height: "40px",
                             },
                         }}
+                        {...textFieldProps}
                         slotProps={{
                             input: {
+                                ...textFieldProps?.slotProps?.input,
                                 endAdornment: isPassword ? (
                                     <InputAdornment position="end">
                                         <IconButton
@@ -121,6 +118,7 @@ const LabelTextInput: React.FC<ITextInputProps> = ({
                     {errorText}
                 </FormHelperText>
             )}
+            {children}
         </Box>
     );
 };

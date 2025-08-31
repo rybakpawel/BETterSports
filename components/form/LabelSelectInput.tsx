@@ -8,7 +8,6 @@ import {
     MenuItem,
     Select,
     SelectChangeEvent,
-    Typography,
 } from "@mui/material";
 
 interface IDataItem {
@@ -19,8 +18,7 @@ interface IDataItem {
 interface ISelectInputProps {
     label: string;
     inputId: string;
-    inputName: string;
-    inputValue: string;
+    value: string;
     isButton?: boolean;
     buttonText?: string;
     errorText?: string;
@@ -31,8 +29,7 @@ interface ISelectInputProps {
 const LabelSelectInput: React.FC<ISelectInputProps> = ({
     label,
     inputId,
-    inputName,
-    inputValue,
+    value,
     isButton = false,
     buttonText = "",
     errorText,
@@ -69,7 +66,7 @@ const LabelSelectInput: React.FC<ISelectInputProps> = ({
                     <Select
                         id={inputId}
                         size="small"
-                        value={inputValue}
+                        value={value.toString()}
                         onChange={onChange}
                         MenuProps={{
                             PaperProps: {

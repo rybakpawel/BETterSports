@@ -1,4 +1,5 @@
 import prisma from "@/prisma";
+import { CoreError } from "@/helpers/errorAndResponseHandlers";
 
 export interface ICity {
     id: number;
@@ -31,7 +32,9 @@ export async function getCitiesByInput(input: string) {
 
         return records;
     } catch (error) {
-        console.error(error);
+        throw new CoreError(
+            "Wystąpił błąd podczas pobierania miasta na podstawie formularza"
+        );
     }
 }
 
@@ -44,6 +47,28 @@ export async function createCity(city: Partial<ICity>) {
 
         return { record };
     } catch (error) {
-        console.error(error);
+        throw new CoreError("Wystąpił błąd podczas tworzenia miasta");
+    }
+}
+
+export async function checkExistingCityInCountry(
+    cityName: string,
+    countryId: number
+) {
+    try {
+        const record = await prisma.city.findFirst({
+            where: {
+                name: cityName,
+                country: {
+                    id: countryId,
+                },
+            },
+        });
+
+        return record;
+    } catch (error) {
+        throw new CoreError(
+            "Wystąpił błąd podczas wyszukiwania miasta na podstawie kraju"
+        );
     }
 }
