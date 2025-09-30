@@ -9,22 +9,10 @@ import {
     createUserValidation,
     CreateUserType,
 } from "@/validation/common/createUserValidation";
-import {
-    Box,
-    Button,
-    Card,
-    CardContent,
-    FormControl,
-    FormHelperText,
-    IconButton,
-    InputAdornment,
-    InputLabel,
-    OutlinedInput,
-    TextField,
-    Typography,
-} from "@mui/material";
+import { Box, Button, Card, CardContent, Typography } from "@mui/material";
 import { LoadingButton } from "@mui/lab";
-import { Visibility, VisibilityOff } from "@mui/icons-material";
+import LabelTextInput from "@/components/form/LabelTextInput";
+import AuthPageWrapper from "@/components/sections/AuthPageWrapper";
 import ApiResponseAlert, {
     ApiResponse,
 } from "@/components/alerts/ApiResponseAlert";
@@ -33,9 +21,6 @@ export default function SignUp() {
     const router = useRouter();
 
     const [isLoading, setIsLoading] = useState<boolean>(false);
-    const [showPassword, setShowPassword] = useState<boolean>(false);
-    const [showConfirmPassword, setShowConfirmPassword] =
-        useState<boolean>(false);
     const [apiResponse, setApiResponse] = useState<ApiResponse | null>(null);
     const [isApiResponseVisible, setIsApiResponseVisible] = useState(false);
 
@@ -73,143 +58,132 @@ export default function SignUp() {
 
     return (
         <>
-            <Card
-                sx={{
-                    my: "5vh",
-                    height: "90vh",
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "center",
-                }}
-            >
-                <CardContent sx={{ m: 3 }}>
-                    <Typography variant="h5" component="h1">
-                        BETter - daj się ponieść stadionowej atmosferze!
-                    </Typography>
-                    <Box
-                        component="form"
-                        sx={{ my: 5 }}
-                        onSubmit={handleSubmit(handleSubmitForm)}
+            <AuthPageWrapper>
+                <Box
+                    sx={(theme) => ({
+                        backgroundColor: theme.palette.background.default,
+                        borderRadius: "16px",
+                        p: 0.5,
+                        mb: 4,
+                        display: "flex",
+                        gap: 1,
+                    })}
+                >
+                    <Link href="/sign-in" style={{ width: "100%" }}>
+                        <Button
+                            variant="text"
+                            fullWidth
+                            sx={(theme) => ({
+                                py: 1.5,
+                                px: 2,
+                                fontSize: 14,
+                                fontWeight: 500,
+                                textTransform: "none",
+                                color: theme.palette.text.secondary,
+                                "&:hover": {
+                                    color: theme.palette.text.primary,
+                                    backgroundColor: "transparent",
+                                },
+                            })}
+                        >
+                            Logowanie
+                        </Button>
+                    </Link>
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        fullWidth
+                        sx={{
+                            py: 1.5,
+                            px: 2,
+                            fontSize: 14,
+                            fontWeight: 500,
+                            textTransform: "none",
+                        }}
                     >
-                        <TextField
-                            id="email"
-                            label="E-mail"
-                            {...register("email")}
-                            error={!!errors.email}
-                            helperText={errors.email?.message as string}
-                            variant="outlined"
-                            fullWidth
-                            sx={{
-                                mb: errors.email ? 0 : 2.5,
-                            }}
-                        />
-                        <TextField
-                            id="username"
-                            label="Nazwa użytkownika"
-                            {...register("username")}
-                            error={!!errors.username}
-                            helperText={errors.username?.message as string}
-                            variant="outlined"
-                            fullWidth
-                            sx={{
-                                mb: errors.username ? 0 : 2.5,
-                            }}
-                        />
-                        <FormControl
-                            variant="outlined"
-                            fullWidth
-                            error={!!errors.password}
-                            sx={{
-                                mb: errors.password ? 0 : 2.5,
-                            }}
-                        >
-                            <InputLabel htmlFor="password">Hasło</InputLabel>
-                            <OutlinedInput
-                                id="password"
-                                label="Hasło"
-                                type={showPassword ? "text" : "password"}
-                                {...register("password")}
-                                endAdornment={
-                                    <InputAdornment position="end">
-                                        <IconButton
-                                            aria-label="toggle password visibility"
-                                            onClick={() => {
-                                                setShowPassword(!showPassword);
-                                            }}
-                                            edge="end"
-                                        >
-                                            {showPassword ? (
-                                                <VisibilityOff />
-                                            ) : (
-                                                <Visibility />
-                                            )}
-                                        </IconButton>
-                                    </InputAdornment>
-                                }
-                                error={!!errors.password}
-                            />
-                            <FormHelperText error={!!errors.password}>
-                                {errors.password?.message as string}
-                            </FormHelperText>
-                        </FormControl>
-                        <FormControl
-                            variant="outlined"
-                            fullWidth
-                            error={!!errors.confirmPassword}
-                            sx={{
-                                mb: errors.confirmPassword ? 3 : 5.5,
-                            }}
-                        >
-                            <InputLabel htmlFor="confirmPassword">
-                                Potwierdź hasło
-                            </InputLabel>
-                            <OutlinedInput
-                                id="confirmPassword"
-                                label="Potwierdź hasło"
-                                type={showConfirmPassword ? "text" : "password"}
-                                {...register("confirmPassword")}
-                                endAdornment={
-                                    <InputAdornment position="end">
-                                        <IconButton
-                                            aria-label="toggle confirmPassword visibility"
-                                            onClick={() => {
-                                                setShowConfirmPassword(
-                                                    !showConfirmPassword
-                                                );
-                                            }}
-                                            edge="end"
-                                        >
-                                            {showConfirmPassword ? (
-                                                <VisibilityOff />
-                                            ) : (
-                                                <Visibility />
-                                            )}
-                                        </IconButton>
-                                    </InputAdornment>
-                                }
-                                error={!!errors.confirmPassword}
-                            />
-                            <FormHelperText error={!!errors.confirmPassword}>
-                                {errors.confirmPassword?.message as string}
-                            </FormHelperText>
-                        </FormControl>
-                        <LoadingButton
-                            type="submit"
-                            fullWidth
-                            variant="contained"
-                            loading={isLoading}
-                            sx={{ mb: 2 }}
-                        >
-                            Zarejestruj
-                        </LoadingButton>
-                        <Link href={"/sign-in"}>
-                            <Button fullWidth variant="outlined">
-                                Logowanie
-                            </Button>
-                        </Link>
+                        Rejestracja
+                    </Button>
+                </Box>
+                <Box
+                    component="form"
+                    sx={{ my: 5 }}
+                    onSubmit={handleSubmit(handleSubmitForm)}
+                >
+                    <LabelTextInput
+                        label="E-mail"
+                        inputId="email"
+                        errorText={errors.email?.message as string}
+                        textFieldProps={{
+                            placeholder: "Wprowadź swój e-mail",
+                            ...register("email"),
+                        }}
+                    />
+                    <LabelTextInput
+                        label="Nazwa użytkownika"
+                        inputId="username"
+                        errorText={errors.username?.message as string}
+                        textFieldProps={{
+                            placeholder: "Wybierz nazwę użytkownika",
+                            ...register("username"),
+                        }}
+                    />
+                    <LabelTextInput
+                        label="Hasło"
+                        inputId="password"
+                        isPassword={true}
+                        errorText={errors.password?.message as string}
+                        textFieldProps={{
+                            placeholder: "Stwórz hasło",
+                            ...register("password"),
+                        }}
+                    />
+                    <LabelTextInput
+                        label="Potwierdź hasło"
+                        inputId="confirmPassword"
+                        isPassword={true}
+                        errorText={errors.confirmPassword?.message as string}
+                        textFieldProps={{
+                            placeholder: "Potwierdź swoje hasło",
+                            ...register("confirmPassword"),
+                        }}
+                    />
+                    <LoadingButton
+                        type="submit"
+                        fullWidth
+                        variant="contained"
+                        loading={isLoading}
+                        sx={{ mt: 3, mb: 4 }}
+                    >
+                        Zarejestruj
+                    </LoadingButton>
+                    <Box sx={{ textAlign: "center" }}>
+                        <Typography color="text.secondary" fontSize={14}>
+                            Masz już konto?{" "}
+                            <Link
+                                href="/sign-in"
+                                style={{ textDecoration: "none" }}
+                            >
+                                <Button
+                                    variant="text"
+                                    sx={(theme) => ({
+                                        color: theme.palette.primary.main,
+                                        textTransform: "none",
+                                        fontSize: 14,
+                                        p: 0,
+                                        minWidth: "auto",
+                                        "&:hover": {
+                                            color: theme.palette.primary.light,
+                                            backgroundColor: "transparent",
+                                        },
+                                    })}
+                                >
+                                    Zaloguj się
+                                </Button>
+                            </Link>
+                        </Typography>
                     </Box>
-                </CardContent>
-            </Card>
+                </Box>
+            </AuthPageWrapper>
             <ApiResponseAlert
                 open={isApiResponseVisible}
                 onClose={() => setIsApiResponseVisible(false)}

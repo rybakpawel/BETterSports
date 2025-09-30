@@ -27,7 +27,7 @@ export const createCityServerValidation = async (
         );
     }
 
-    const country = await getCountry(data.country);
+    const country = await getCountry({ id: data.country });
 
     if (!country) {
         throw new LogicError("Podany kraj nie istnieje", 400);

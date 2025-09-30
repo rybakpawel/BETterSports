@@ -67,9 +67,18 @@ const HeaderUserMenu: React.FC<IHeaderUserMenuProps> = ({
                 </IconButton>
             </Tooltip>
             <Menu
-                sx={{
+                sx={(theme) => ({
                     mt: "45px",
-                }}
+                    "& .MuiPaper-root": {
+                        backgroundColor: `${theme.palette.background.paper} !important`,
+                        border: `1px solid ${theme.palette.grey[600]}`,
+                        borderRadius: 1,
+                        "&::before": {
+                            display: "none !important",
+                        },
+                        "--Paper-overlay": "none !important",
+                    },
+                })}
                 id="menu-appbar"
                 anchorEl={anchorElUser}
                 anchorOrigin={{
@@ -93,25 +102,32 @@ const HeaderUserMenu: React.FC<IHeaderUserMenuProps> = ({
                     <MenuItem
                         key={option.name}
                         selected={
-                            option.href ===
-                            `${process.env.NEXT_PUBLIC_URL}${pathname}`
-                                ? true
-                                : false
+                            option.name === "Ustawienia"
+                                ? pathname.includes("/user-settings/")
+                                : option.href ===
+                                  `${process.env.NEXT_PUBLIC_URL}${pathname}`
                         }
                         onClick={
                             option.href === ""
                                 ? () => signOut()
                                 : () => handleClickUserMenuOption(option.href)
                         }
-                        sx={{
+                        sx={(theme) => ({
+                            color: theme.palette.text.secondary,
+                            backgroundColor: "transparent",
                             "&:hover": {
-                                color:
-                                    option.href ===
-                                    `${process.env.NEXT_PUBLIC_URL}${pathname}`
-                                        ? ""
-                                        : "primary.main",
+                                color: theme.palette.text.primary,
+                                backgroundColor: "transparent",
                             },
-                        }}
+                            "&.Mui-selected": {
+                                color: theme.palette.text.primary,
+                                backgroundColor: "transparent !important",
+                                "&:hover": {
+                                    color: theme.palette.text.primary,
+                                    backgroundColor: "transparent !important",
+                                },
+                            },
+                        })}
                     >
                         <Typography textAlign="center">
                             {option.name}

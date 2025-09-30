@@ -1,7 +1,7 @@
 import prisma from "@/prisma";
+import { Prisma } from "@prisma/client";
 import { CoreError } from "@/helpers/errorAndResponseHandlers";
 
-// 1 usage
 export async function getAllCountries() {
     try {
         const records = await prisma.country.findMany({
@@ -10,18 +10,35 @@ export async function getAllCountries() {
 
         return records;
     } catch (error) {
-        throw new CoreError("Wystąpił błąd podczas pobierania listy krajów");
+        throw new CoreError(
+            "Wystąpił błąd podczas pobierania listy krajów",
+            error as string
+        );
     }
 }
 
-export async function getCountry(countryId: number) {
+export async function getCountry(
+    whereClause: Prisma.CountryWhereInput,
+    includeOptions?: Prisma.CountryInclude
+) {
     try {
-        const record = await prisma.country.findUnique({
-            where: { id: countryId },
+        const record = await prisma.country.findFirst({
+            where: whereClause,
+            include: {
+                city: includeOptions?.city ?? false,
+                createdBy: includeOptions?.createdBy ?? false,
+                flag: includeOptions?.flag ?? false,
+                updatedBy: includeOptions?.updatedBy ?? false,
+                league: includeOptions?.league ?? false,
+                person: includeOptions?.person ?? false,
+            },
         });
 
         return record;
     } catch (error) {
-        throw new CoreError("Wystąpił błąd podczas pobierania kraju");
+        throw new CoreError(
+            "Wystąpił błąd podczas pobierania kraju",
+            error as string
+        );
     }
 }

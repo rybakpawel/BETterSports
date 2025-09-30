@@ -36,7 +36,9 @@ export async function verifyResetPassword(
             await createLog({
                 level: LogLevel.ERROR,
                 errorType: error.errorType,
-                description: error.message,
+                description:
+                    error.message +
+                    (error.messageLog ? ": " + error.messageLog : ""),
                 location: LOCATION,
                 createdById: systemUser.id,
                 updatedById: systemUser.id,
@@ -49,7 +51,8 @@ export async function verifyResetPassword(
             level: LogLevel.ERROR,
             errorType: ErrorType.APP,
             description:
-                "Wewnętrzny błąd serwera podczas weryfikacji tokena resetowania hasła",
+                "Wewnętrzny błąd serwera podczas weryfikacji tokena resetowania hasła: " +
+                error,
             location: LOCATION,
             createdById: systemUser.id,
             updatedById: systemUser.id,

@@ -71,7 +71,9 @@ export async function getUserSettings(): Promise<
             await createLog({
                 level: LogLevel.ERROR,
                 errorType: error.errorType,
-                description: error.message,
+                description:
+                    error.message +
+                    (error.messageLog ? ": " + error.messageLog : ""),
                 location: LOCATION,
                 createdById: userId,
                 updatedById: userId,
@@ -83,7 +85,8 @@ export async function getUserSettings(): Promise<
             level: LogLevel.ERROR,
             errorType: ErrorType.APP,
             description:
-                "Wewnętrzny błąd serwera podczas pobierania ustawień użytkownika",
+                "Wewnętrzny błąd serwera podczas pobierania ustawień użytkownika: " +
+                error,
             location: LOCATION,
             createdById: userId,
             updatedById: userId,

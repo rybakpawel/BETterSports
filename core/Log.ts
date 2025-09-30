@@ -1,7 +1,7 @@
 import prisma from "@/prisma";
 import { ErrorType, LogLevel, Prisma } from "@prisma/client";
 
-interface ILog {
+interface ICreateLog {
     level: LogLevel;
     errorType?: ErrorType;
     description: string;
@@ -11,7 +11,7 @@ interface ILog {
     data?: Prisma.InputJsonValue | Prisma.NullableJsonNullValueInput;
 }
 
-export async function createLog(log: ILog) {
+export async function createLog(log: ICreateLog) {
     try {
         await prisma.log.create({
             data: log,

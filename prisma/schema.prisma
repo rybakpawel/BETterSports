@@ -256,6 +256,7 @@ model League {
   sportId     Int
   createdById Int
   updatedById Int
+  name        String
   country     Country  @relation(fields: [countryId], references: [id])
   createdBy   User     @relation("LeagueCreatedBy", fields: [createdById], references: [id])
   sport       Sport    @relation(fields: [sportId], references: [id])
@@ -280,18 +281,18 @@ model Location {
 }
 
 model Log {
-  id          Int      @id @default(autoincrement())
-  level       LogLevel
-  errorType   ErrorType?
+  id          Int        @id @default(autoincrement())
   description String
-  location    String
-  data        Json?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
   createdById Int
   updatedById Int
-  createdBy   User     @relation("LogCreatedBy", fields: [createdById], references: [id])
-  updatedBy   User     @relation("LogUpdatedBy", fields: [updatedById], references: [id])
+  location    String
+  data        Json?
+  level       LogLevel?
+  errorType   ErrorType?
+  createdBy   User       @relation("LogCreatedBy", fields: [createdById], references: [id])
+  updatedBy   User       @relation("LogUpdatedBy", fields: [updatedById], references: [id])
 }
 
 model Market {
@@ -409,7 +410,6 @@ model User {
   username                    String               @unique
   password                    String
   isActive                    Boolean              @default(false)
-  role                        Role                 @default(USER)
   createdAt                   DateTime             @default(now())
   updatedAt                   DateTime             @updatedAt
   personId                    Int                  @unique
@@ -422,6 +422,7 @@ model User {
   favouriteSportId            Int?
   primaryColor                String?
   secondaryColor              String?
+  role                        Role                 @default(USER)
   activateTokenCreatedBy      ActivateToken[]      @relation("ActivateTokenCreatedBy")
   activateTokenUpdatedBy      ActivateToken[]      @relation("ActivateTokenUpdatedBy")
   activateToken               ActivateToken[]      @relation("ActivateTokenUser")
@@ -476,14 +477,14 @@ model User {
   teamUpdatedBy               Team[]               @relation("TeamUpdatedBy")
   tourGroupCreatedBy          TourGroup[]          @relation("TourGroupCreatedBy")
   tourGroupUpdatedBy          TourGroup[]          @relation("TourGroupUpdatedBy")
-  backgroundImage             Image?               @relation("BackgroundImage", fields: [backgroundImageId], references: [id], onDelete: SetNull)
+  backgroundImage             Image?               @relation("BackgroundImage", fields: [backgroundImageId], references: [id])
   city                        City?                @relation(fields: [cityId], references: [id])
   createdBy                   User?                @relation("UserCreatedBy", fields: [createdById], references: [id])
   userCreatedBy               User[]               @relation("UserCreatedBy")
   favouriteSport              Sport?               @relation(fields: [favouriteSportId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   favouriteTeam               Team?                @relation(fields: [favouriteTeamId], references: [id])
   person                      Person               @relation(fields: [personId], references: [id])
-  profileImage                Image?               @relation("ProfileImage", fields: [profileImageId], references: [id], onDelete: SetNull)
+  profileImage                Image?               @relation("ProfileImage", fields: [profileImageId], references: [id])
   updatedBy                   User?                @relation("UserUpdatedBy", fields: [updatedById], references: [id])
   userUpdatedBy               User[]               @relation("UserUpdatedBy")
   userToEventCreatedBy        UserToEvent[]        @relation("UserToEventCreatedBy")
@@ -499,6 +500,31 @@ model User {
   userToGadgetCreatedBy       UserToGadget[]       @relation("UserToGadgetCreatedBy")
   userToGadgetUpdatedBy       UserToGadget[]       @relation("UserToGadgetUpdatedBy")
   userToGadget                UserToGadget[]
+  userPreferences             UserPreferences?     @relation("UserPreferences")
+  userPreferencesCreatedBy    UserPreferences[]    @relation("UserPreferencesCreatedBy")
+  userPreferencesUpdatedBy    UserPreferences[]    @relation("UserPreferencesUpdatedBy")
+}
+
+model UserPreferences {
+  id                          Int      @id @default(autoincrement())
+  userId                      Int      @unique
+  createdAt                   DateTime @default(now())
+  updatedAt                   DateTime @updatedAt
+  createdById                 Int
+  updatedById                 Int
+  showOnlyFavoriteSportContent Boolean @default(false)
+  prioritizeNearbyEvents      Boolean @default(false)
+  showFriendActivitiesInFeed  Boolean @default(false)
+  pushNewEventsNearby         Boolean @default(true)
+  pushFriendActivities        Boolean @default(true)
+  pushChallengeUpdates        Boolean @default(true)
+  pushTournamentUpdates       Boolean @default(true)
+  emailEventReminders         Boolean @default(true)
+  emailTournamentReminders    Boolean @default(true)
+  emailWeeklyDigest           Boolean @default(true)
+  user                        User     @relation("UserPreferences", fields: [userId], references: [id], onDelete: Cascade)
+  createdBy                   User     @relation("UserPreferencesCreatedBy", fields: [createdById], references: [id])
+  updatedBy                   User     @relation("UserPreferencesUpdatedBy", fields: [updatedById], references: [id])
 }
 
 model UserToEvent {

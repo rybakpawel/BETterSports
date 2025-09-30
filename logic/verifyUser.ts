@@ -1,9 +1,6 @@
 import { getActivateToken } from "@/core/ActivateToken";
-import { IUserUpdate, getSystemUser, updateUser } from "@/core/User";
-import {
-    IActivateTokenUpdate,
-    updateActivateToken,
-} from "@/core/ActivateToken";
+import { getSystemUser, updateUser } from "@/core/User";
+import { updateActivateToken } from "@/core/ActivateToken";
 import { createLog } from "@/core/Log";
 import { ErrorType, LogLevel } from "@prisma/client";
 import { AppError, ApiResponse } from "@/helpers/errorAndResponseHandlers";
@@ -21,23 +18,20 @@ export async function verifyUser(
 
         const activateToken = await getActivateToken({ token });
 
-        if (activateToken?.record) {
-            const user: Partial<IUserUpdate> = {
+        if (activateToken) {
+            const user = {
                 isActive: true,
                 updatedAt: new Date(),
-                updatedById: activateToken.record.userId,
+                updatedBy: { connect: { id: activateToken.userId } },
             };
-            await updateUser(activateToken.record.userId, user);
+            await updateUser(activateToken.userId, user);
 
-            const updatedActivateToken: Partial<IActivateTokenUpdate> = {
+            const updatedActivateToken = {
                 activatedAt: new Date(),
                 updatedAt: new Date(),
-                updatedBy: { connect: { id: activateToken.record.userId } },
+                updatedBy: { connect: { id: activateToken.userId } },
             };
-            await updateActivateToken(
-                activateToken.record.id,
-                updatedActivateToken
-            );
+            await updateActivateToken(activateToken.id, updatedActivateToken);
         }
 
         await createLog({
@@ -71,7 +65,9 @@ export async function verifyUser(
             await createLog({
                 level: LogLevel.ERROR,
                 errorType: error.errorType,
-                description: error.message,
+                description:
+                    error.message +
+                    (error.messageLog ? ": " + error.messageLog : ""),
                 location: LOCATION,
                 createdById: systemUser.id,
                 updatedById: systemUser.id,
@@ -84,7 +80,8 @@ export async function verifyUser(
             level: LogLevel.ERROR,
             errorType: ErrorType.APP,
             description:
-                "Wewnętrzny błąd serwera podczas weryfikacji konta użytkownika",
+                "Wewnętrzny błąd serwera podczas weryfikacji konta użytkownika: " +
+                error,
             location: LOCATION,
             createdById: systemUser.id,
             updatedById: systemUser.id,

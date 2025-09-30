@@ -10,9 +10,8 @@ export const verifyUserServerValidation = async (token: string) => {
 
     const activateToken = await getActivateToken({ token });
 
-    if (!activateToken?.record)
-        throw new LogicError("Podany token nie istnieje", 400);
+    if (!activateToken) throw new LogicError("Podany token nie istnieje", 400);
 
-    if (activateToken.record.activatedAt)
+    if (activateToken.activatedAt)
         throw new LogicError("Token aktywacyjny wygasł", 401);
 };

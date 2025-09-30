@@ -4,8 +4,8 @@ import {
 } from "../common/accountDataValidation";
 import { LogicError } from "@/helpers/errorAndResponseHandlers";
 import { getUser } from "@/core/User";
-import { getSportById } from "@/core/Sport";
-import { getTeamById } from "@/core/Team";
+import { getSport } from "@/core/Sport";
+import { getTeam } from "@/core/Team";
 
 export const accountDataServerValidation = async (
     data: AccountDataType,
@@ -49,7 +49,7 @@ export const accountDataServerValidation = async (
     }
 
     if (data.favouriteSport && data.favouriteSport > 0) {
-        const sport = await getSportById(data.favouriteSport);
+        const sport = await getSport({ id: data.favouriteSport });
 
         if (!sport) {
             throw new LogicError("Podany sport nie istnieje", 400);
@@ -57,7 +57,7 @@ export const accountDataServerValidation = async (
     }
 
     if (data.favouriteTeam && data.favouriteTeam > 0) {
-        const team = await getTeamById(data.favouriteTeam);
+        const team = await getTeam({ id: data.favouriteTeam });
 
         if (!team) {
             throw new LogicError("Podana drużyna nie istnieje", 400);

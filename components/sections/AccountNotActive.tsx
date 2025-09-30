@@ -44,7 +44,13 @@ const AccountNotActive = ({ userId }: { userId?: string }) => {
                     justifyContent: "center",
                 }}
             >
-                <CardContent sx={{ m: 3, mb: 0 }}>
+                <CardContent
+                    sx={{
+                        m: 3,
+                        mb: 0,
+                        "&:last-child": { paddingBottom: "2rem" },
+                    }}
+                >
                     <Typography variant="h5" component="h1">
                         Konto nie jest aktywne!
                     </Typography>

@@ -1,6 +1,6 @@
 import { getResetPasswordToken } from "@/core/ResetPasswordToken";
 import { hash } from "bcryptjs";
-import { IUserUpdate, getSystemUser, updateUser } from "@/core/User";
+import { getSystemUser, updateUser } from "@/core/User";
 import { createLog } from "@/core/Log";
 import { ErrorType, LogLevel } from "@prisma/client";
 import { resetPasswordServerValidation } from "@/validation/server/resetPasswordServerValidation";
@@ -15,6 +15,8 @@ export async function resetPassword(
     userId: number,
     token: string
 ): Promise<ApiResponse<void>> {
+    const systemUser = await getSystemUser();
+
     try {
         await resetPasswordServerValidation(
             { password: newPassword, confirmPassword },
@@ -25,29 +27,26 @@ export async function resetPassword(
 
         if (token) {
             const resetPasswordToken = await getResetPasswordToken({ token });
-            userId = resetPasswordToken?.record?.userId ?? 0;
+            userId = resetPasswordToken?.userId ?? 0;
         }
 
         const hashedPassword = await hash(newPassword, 10);
 
-        const user: Partial<IUserUpdate> = {
+        const user = {
             password: hashedPassword,
             updatedAt: new Date(),
-            updatedById: userId,
+            updatedBy: { connect: { id: userId } },
         };
 
         await updateUser(userId, user);
-
-        let systemUser;
-        if (!userId) systemUser = await getSystemUser();
 
         await createLog({
             level: LogLevel.INFO,
             description:
                 "Zakończenie operacji biznesowej ustawienia nowego hasła do konta użytkownika",
             location: LOCATION,
-            createdById: !systemUser ? userId : systemUser.id,
-            updatedById: !systemUser ? userId : systemUser.id,
+            createdById: !userId ? systemUser?.id : userId,
+            updatedById: !userId ? systemUser?.id : userId,
         });
 
         return new ApiResponse(
@@ -56,13 +55,13 @@ export async function resetPassword(
             "Hasło użytkownika zostało zmienione"
         );
     } catch (error) {
-        const systemUser = await getSystemUser();
-
         if (error instanceof AppError) {
             await createLog({
                 level: LogLevel.ERROR,
                 errorType: error.errorType,
-                description: error.message,
+                description:
+                    error.message +
+                    (error.messageLog ? ": " + error.messageLog : ""),
                 location: LOCATION,
                 createdById: systemUser.id,
                 updatedById: systemUser.id,
@@ -75,7 +74,8 @@ export async function resetPassword(
             level: LogLevel.ERROR,
             errorType: ErrorType.APP,
             description:
-                "Wewnętrzny błąd serwera podczas ustawienia nowego hasła do konta użytkownika",
+                "Wewnętrzny błąd serwera podczas ustawienia nowego hasła do konta użytkownika: " +
+                error,
             location: LOCATION,
             createdById: systemUser.id,
             updatedById: systemUser.id,

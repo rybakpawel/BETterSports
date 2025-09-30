@@ -31,7 +31,7 @@ export async function resendVerificationEmail(
             to: [user?.email as string],
             subject: "Weryfikacja konta BETter",
             react: VerifyUser({
-                activateToken: token?.record?.token,
+                activateToken: token?.token,
             }) as React.ReactElement,
         });
 
@@ -60,7 +60,9 @@ export async function resendVerificationEmail(
             await createLog({
                 level: LogLevel.ERROR,
                 errorType: error.errorType,
-                description: error.message,
+                description:
+                    error.message +
+                    (error.messageLog ? ": " + error.messageLog : ""),
                 location: LOCATION,
                 createdById: systemUser.id,
                 updatedById: systemUser.id,
@@ -73,7 +75,8 @@ export async function resendVerificationEmail(
             level: LogLevel.ERROR,
             errorType: ErrorType.APP,
             description:
-                "Wewnętrzny błąd serwera podczas ponownego wysłania e-maila z linkiem aktywacyjnym do konta",
+                "Wewnętrzny błąd serwera podczas ponownego wysłania e-maila z linkiem aktywacyjnym do konta: " +
+                error,
             location: LOCATION,
             createdById: systemUser.id,
             updatedById: systemUser.id,

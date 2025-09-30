@@ -4,8 +4,7 @@ import { StyledEngineProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import theme from "@/styles/theme";
 import { ThemeProvider } from "@mui/material";
-import { Container, Grid } from "@mui/material";
-import Image from "next/image";
+import { Box, Container } from "@mui/material";
 
 export const metadata: Metadata = {
     title: "BETter Sports",
@@ -21,53 +20,19 @@ export default function RootLayout({
                 <ThemeProvider theme={theme}>
                     <CssBaseline />
                     <body>
-                        <Grid container>
-                            <Grid
-                                item
-                                xs={0}
-                                sm={8}
-                                sx={{ display: { xs: "none", md: "block" } }}
-                            >
-                                <Container
-                                    sx={{
-                                        width: "100%",
-                                        height: "100%",
-                                        position: "relative",
-                                    }}
-                                >
-                                    <Container
-                                        sx={{
-                                            width: "15vw",
-                                            height: "5vh",
-                                            position: "absolute",
-                                            margin: "5vh 0 0 0",
-                                        }}
-                                    >
-                                        <Image
-                                            src={"/logo.png"}
-                                            alt="logo"
-                                            layout="fill"
-                                            objectFit="contain"
-                                        ></Image>
-                                    </Container>
-                                    <Image
-                                        src={"/hero.png"}
-                                        alt="hero"
-                                        layout="fill"
-                                        objectFit="contain"
-                                    ></Image>
-                                </Container>
-                            </Grid>
-
-                            <Grid
-                                item
-                                xs={8}
-                                md={3}
-                                sx={{ mx: { xs: "auto" } }}
-                            >
+                        <Box
+                            sx={{
+                                minHeight: "100vh",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                px: 2,
+                            }}
+                        >
+                            <Container maxWidth="sm" sx={{ px: 0 }}>
                                 {children}
-                            </Grid>
-                        </Grid>
+                            </Container>
+                        </Box>
                     </body>
                 </ThemeProvider>
             </StyledEngineProvider>

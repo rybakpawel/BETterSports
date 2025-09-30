@@ -1,8 +1,6 @@
-import { ICity } from "@/core/City";
 import { createCity as createCityCore } from "@/core/City";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { getServerSession } from "next-auth";
-import { getSystemUser } from "@/core/User";
 import { AppError, ApiResponse } from "@/helpers/errorAndResponseHandlers";
 import { createLog } from "@/core/Log";
 import { ErrorType, LogLevel } from "@prisma/client";
@@ -22,7 +20,7 @@ export async function createCity(
 
         const { country, name } = cityData;
 
-        const city: Partial<ICity> = {
+        const city = {
             name,
             country: {
                 connect: {
@@ -60,7 +58,7 @@ export async function createCity(
             await createLog({
                 level: LogLevel.ERROR,
                 errorType: error.errorType,
-                description: error.message,
+                description: error.message + ": " + error.messageLog,
                 location: LOCATION,
                 createdById: userId,
                 updatedById: userId,
@@ -72,7 +70,8 @@ export async function createCity(
             level: LogLevel.ERROR,
             errorType: ErrorType.APP,
             description:
-                "Wewnętrzny błąd serwera podczas tworzenia nowego miasta",
+                "Wewnętrzny błąd serwera podczas tworzenia nowego miasta: " +
+                error,
             location: LOCATION,
             createdById: userId,
             updatedById: userId,

@@ -7,6 +7,6 @@ export const verifyResetPasswordServerValidation = async (token: string) => {
 
     const resetPasswordToken = await getResetPasswordToken({ token });
 
-    if (!resetPasswordToken?.record)
+    if (!resetPasswordToken)
         throw new LogicError("Podany token nie istnieje", 400);
 };

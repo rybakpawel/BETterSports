@@ -43,7 +43,9 @@ export async function getGlobalHeaderData(): Promise<
             await createLog({
                 level: LogLevel.ERROR,
                 errorType: error.errorType,
-                description: error.message,
+                description:
+                    error.message +
+                    (error.messageLog ? ": " + error.messageLog : ""),
                 location: LOCATION,
                 createdById: userId,
                 updatedById: userId,
@@ -55,7 +57,8 @@ export async function getGlobalHeaderData(): Promise<
             level: LogLevel.ERROR,
             errorType: ErrorType.APP,
             description:
-                "Wewnętrzny błąd serwera podczas pobierania informacji z górnej belki zalogowanego użytkownika",
+                "Wewnętrzny błąd serwera podczas pobierania informacji z górnej belki zalogowanego użytkownika: " +
+                error,
             location: LOCATION,
             createdById: userId,
             updatedById: userId,

@@ -14,6 +14,7 @@ import {
     Typography,
 } from "@mui/material";
 import { LoadingButton } from "@mui/lab";
+import { Key, Delete, Save } from "@mui/icons-material";
 import "dayjs/locale/pl";
 import LabelTextInput from "../form/LabelTextInput";
 import LabelImageInput from "../form/LabelImageInput";
@@ -345,184 +346,270 @@ const AccountDataForm: React.FC<IAccountDataFormProps> = ({
 
     return (
         <>
-            <Box sx={{ p: 2 }}>
-                <Box
-                    sx={{
-                        display: { md: "flex" },
-                        justifyContent: "space-between",
-                    }}
+            <Card>
+                <CardContent
+                    sx={{ p: 4, "&:last-child": { paddingBottom: "2rem" } }}
                 >
-                    <Typography variant="h5" component="h2">
-                        Dane konta
-                    </Typography>
-                    <Box sx={{ mt: { xs: 1, md: 0 } }}>
-                        <LoadingButton
-                            type="button"
-                            variant="outlined"
-                            disabled={isLoadingAccountDataForm}
-                            onClick={() => handleChangePasswordModal(true)}
-                        >
-                            Zmień hasło
-                        </LoadingButton>
-                        <LoadingButton
-                            type="button"
-                            variant="outlined"
-                            disabled={isLoadingAccountDataForm}
-                            onClick={() => handleDeleteAccountModal(true)}
-                            sx={{ ml: 1 }}
-                        >
-                            Usuń konto
-                        </LoadingButton>
-                    </Box>
-                </Box>
-
-                <Divider sx={{ my: 2 }} />
-                <Box
-                    component="form"
-                    onSubmit={handleSubmitAccountData(
-                        handleSubmitAccountDataForm
-                    )}
-                >
-                    <Box sx={{ display: { xs: "block", md: "flex" } }}>
-                        <Box sx={{ flexBasis: "50%" }}>
-                            <LabelImageInput
-                                label="Zdjęcie profilowe"
-                                inputId="profileImage"
-                                imageSrc={
-                                    profileImageUrl
-                                        ? profileImageUrl
-                                        : "https://cdn-icons-png.flaticon.com/512/149/149071.png"
-                                }
-                                imageAlt="Zdjęcie profilowe"
-                                borderRadius="50%"
-                                onFileChange={handleFileChange}
-                            />
-                        </Box>
-
-                        <Box sx={{ flexBasis: "50%" }}>
-                            <LabelImageInput
-                                label="Zdjęcie w tle"
-                                inputId="backgroundImage"
-                                imageSrc={
-                                    backgroundImageUrl
-                                        ? backgroundImageUrl
-                                        : "https://www.amnesty.ie/wp-content/uploads/2016/05/placeholder_2.jpg"
-                                }
-                                imageAlt="Zdjęcie w tle"
-                                imageWidth="100%"
-                                onFileChange={handleFileChange}
-                            />
-                        </Box>
-                    </Box>
-                    <LabelTextInput
-                        label="Nazwa użytkownika"
-                        inputId="username"
-                        errorText={accountDataFormErrors.username?.message}
-                        textFieldProps={{
-                            ...accountDataRegister("username"),
-                        }}
-                    />
-                    <Controller
-                        name="favouriteSport"
-                        control={accountDataControl}
-                        render={({ field }) => (
-                            <LabelSelectInput
-                                label="Ulubiony sport"
-                                inputId="favouriteSport"
-                                value={field.value?.toString() ?? ""}
-                                errorText={
-                                    accountDataFormErrors.favouriteSport
-                                        ?.message
-                                }
-                                dataList={sportsList}
-                                onChange={(event) => {
-                                    field.onChange(Number(event.target.value));
-                                }}
-                            />
-                        )}
-                    />
-                    <Controller
-                        name="favouriteTeam"
-                        control={accountDataControl}
-                        render={({ field, fieldState }) => (
-                            <LabelAutocompleteInput
-                                label="Ulubiona drużyna"
-                                inputId="favouriteTeam"
-                                inputValue={teamInput}
-                                defaultId={defaultTeamId}
-                                errorText={fieldState.error?.message}
-                                dataList={teamsList}
-                                isLoadingData={isLoadingTeams}
-                                onChange={(event, newValue) => {
-                                    field.onChange(newValue ? newValue.id : 0);
-                                }}
-                                onInputChange={(
-                                    event,
-                                    newInputValue,
-                                    reason
-                                ) => {
-                                    setTeamInput(newInputValue);
-                                }}
-                            />
-                        )}
-                    />
-                    <Controller
-                        name="primaryColor"
-                        control={accountDataControl}
-                        render={({ field }) => (
-                            <LabelColorInput
-                                label="Kolor podstawowy"
-                                inputId="primaryColor"
-                                inputName="primaryColor"
-                                inputValue={field.value ?? "#FFFFFF"}
-                                errorText={
-                                    accountDataFormErrors.primaryColor?.message
-                                }
-                                onChange={(color) => {
-                                    field.onChange(color);
-                                }}
-                            />
-                        )}
-                    />
-                    <Controller
-                        name="secondaryColor"
-                        control={accountDataControl}
-                        render={({ field }) => (
-                            <LabelColorInput
-                                label="Kolor drugorzędny"
-                                inputId="secondaryColor"
-                                inputName="secondaryColor"
-                                inputValue={field.value ?? "#FFFFFF"}
-                                errorText={
-                                    accountDataFormErrors.secondaryColor
-                                        ?.message
-                                }
-                                onChange={(color) => {
-                                    field.onChange(color);
-                                }}
-                            />
-                        )}
-                    />
                     <Box
                         sx={{
-                            display: "flex",
+                            display: { md: "flex" },
+                            justifyContent: "space-between",
                             alignItems: "center",
-                            justifyContent: "flex-end",
+                            mb: 3,
                         }}
                     >
-                        <LoadingButton
-                            type="submit"
-                            variant="contained"
-                            loading={isLoadingAccountDataForm}
+                        <Typography
+                            variant="h4"
+                            sx={(theme) => ({
+                                color: theme.palette.text.primary,
+                                fontWeight: 700,
+                            })}
+                        >
+                            Dane konta
+                        </Typography>
+                        <Box sx={{ display: "flex", gap: 1 }}>
+                            <LoadingButton
+                                type="button"
+                                variant="contained"
+                                startIcon={<Key />}
+                                disabled={isLoadingAccountDataForm}
+                                onClick={() => handleChangePasswordModal(true)}
+                                sx={(theme) => ({
+                                    backgroundColor:
+                                        theme.palette.secondary.main,
+                                    color: theme.palette.secondary.contrastText,
+                                    "&:hover": {
+                                        backgroundColor:
+                                            theme.palette.secondary.dark,
+                                        color: theme.palette.secondary
+                                            .contrastText,
+                                    },
+                                })}
+                            >
+                                Zmień hasło
+                            </LoadingButton>
+                            <LoadingButton
+                                type="button"
+                                variant="contained"
+                                startIcon={<Delete />}
+                                disabled={isLoadingAccountDataForm}
+                                onClick={() => handleDeleteAccountModal(true)}
+                                sx={(theme) => ({
+                                    backgroundColor: theme.palette.error.main,
+                                    color: theme.palette.error.contrastText,
+                                    "&:hover": {
+                                        backgroundColor:
+                                            theme.palette.error.light,
+                                        color: theme.palette.error.contrastText,
+                                    },
+                                })}
+                            >
+                                Usuń konto
+                            </LoadingButton>
+                        </Box>
+                    </Box>
+
+                    <Box
+                        component="form"
+                        onSubmit={handleSubmitAccountData(
+                            handleSubmitAccountDataForm
+                        )}
+                    >
+                        {/* First line: Profile image and background image */}
+                        <Box
                             sx={{
-                                flexBasis: { xs: "100%", md: "auto" },
+                                display: { xs: "block", md: "flex" },
+                                gap: 2,
+                                mb: 2,
                             }}
                         >
-                            Zapisz
-                        </LoadingButton>
+                            <Box sx={{ flex: 1 }}>
+                                <LabelImageInput
+                                    label="Zdjęcie profilowe"
+                                    inputId="profileImage"
+                                    imageSrc={
+                                        profileImageUrl
+                                            ? profileImageUrl
+                                            : "https://cdn-icons-png.flaticon.com/512/149/149071.png"
+                                    }
+                                    imageAlt="Profile Picture"
+                                    isProfilePicture={true}
+                                    onFileChange={handleFileChange}
+                                />
+                            </Box>
+                            <Box sx={{ flex: 1 }}>
+                                <LabelImageInput
+                                    label="Zdjęcie w tle"
+                                    inputId="backgroundImage"
+                                    imageSrc={
+                                        backgroundImageUrl
+                                            ? backgroundImageUrl
+                                            : "https://www.amnesty.ie/wp-content/uploads/2016/05/placeholder_2.jpg"
+                                    }
+                                    imageAlt="Cover Photo"
+                                    isProfilePicture={false}
+                                    onFileChange={handleFileChange}
+                                />
+                            </Box>
+                        </Box>
+
+                        {/* Second line: Username (full width) */}
+                        <Box sx={{ mb: 2 }}>
+                            <LabelTextInput
+                                label="Nazwa użytkownika"
+                                inputId="username"
+                                errorText={
+                                    accountDataFormErrors.username?.message
+                                }
+                                textFieldProps={{
+                                    ...accountDataRegister("username"),
+                                }}
+                            />
+                        </Box>
+
+                        {/* Third line: Favorite sport and favorite team */}
+                        <Box
+                            sx={{
+                                display: { xs: "block", md: "flex" },
+                                gap: 2,
+                                mb: 2,
+                            }}
+                        >
+                            <Box sx={{ flex: 1 }}>
+                                <Controller
+                                    name="favouriteSport"
+                                    control={accountDataControl}
+                                    render={({ field }) => (
+                                        <LabelSelectInput
+                                            label="Ulubiony sport"
+                                            inputId="favouriteSport"
+                                            value={
+                                                field.value?.toString() ?? ""
+                                            }
+                                            errorText={
+                                                accountDataFormErrors
+                                                    .favouriteSport?.message
+                                            }
+                                            dataList={sportsList}
+                                            onChange={(event) => {
+                                                field.onChange(
+                                                    Number(event.target.value)
+                                                );
+                                            }}
+                                        />
+                                    )}
+                                />
+                            </Box>
+                            <Box sx={{ flex: 1 }}>
+                                <Controller
+                                    name="favouriteTeam"
+                                    control={accountDataControl}
+                                    render={({ field, fieldState }) => (
+                                        <LabelAutocompleteInput
+                                            label="Ulubiona drużyna"
+                                            inputId="favouriteTeam"
+                                            inputValue={teamInput}
+                                            defaultId={defaultTeamId}
+                                            errorText={
+                                                fieldState.error?.message
+                                            }
+                                            dataList={teamsList}
+                                            isLoadingData={isLoadingTeams}
+                                            onChange={(event, newValue) => {
+                                                field.onChange(
+                                                    newValue ? newValue.id : 0
+                                                );
+                                            }}
+                                            onInputChange={(
+                                                event,
+                                                newInputValue,
+                                                reason
+                                            ) => {
+                                                setTeamInput(newInputValue);
+                                            }}
+                                        />
+                                    )}
+                                />
+                            </Box>
+                        </Box>
+
+                        {/* Fourth line: Colors */}
+                        <Box
+                            sx={{
+                                display: { xs: "block", md: "flex" },
+                                gap: 2,
+                                mb: 2,
+                            }}
+                        >
+                            <Box sx={{ flex: 1 }}>
+                                <Controller
+                                    name="primaryColor"
+                                    control={accountDataControl}
+                                    render={({ field }) => (
+                                        <LabelColorInput
+                                            label="Kolor podstawowy"
+                                            inputId="primaryColor"
+                                            inputName="primaryColor"
+                                            inputValue={
+                                                field.value ?? "#FFFFFF"
+                                            }
+                                            errorText={
+                                                accountDataFormErrors
+                                                    .primaryColor?.message
+                                            }
+                                            onChange={(color) => {
+                                                field.onChange(color);
+                                            }}
+                                        />
+                                    )}
+                                />
+                            </Box>
+                            <Box sx={{ flex: 1 }}>
+                                <Controller
+                                    name="secondaryColor"
+                                    control={accountDataControl}
+                                    render={({ field }) => (
+                                        <LabelColorInput
+                                            label="Kolor drugorzędny"
+                                            inputId="secondaryColor"
+                                            inputName="secondaryColor"
+                                            inputValue={
+                                                field.value ?? "#FFFFFF"
+                                            }
+                                            errorText={
+                                                accountDataFormErrors
+                                                    .secondaryColor?.message
+                                            }
+                                            onChange={(color) => {
+                                                field.onChange(color);
+                                            }}
+                                        />
+                                    )}
+                                />
+                            </Box>
+                        </Box>
+                        <Box
+                            sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "flex-end",
+                            }}
+                        >
+                            <LoadingButton
+                                type="submit"
+                                variant="contained"
+                                loading={isLoadingAccountDataForm}
+                                startIcon={<Save />}
+                                sx={{
+                                    flexBasis: { xs: "100%", md: "auto" },
+                                }}
+                            >
+                                Zapisz zmiany
+                            </LoadingButton>
+                        </Box>
                     </Box>
-                </Box>
-            </Box>
+                </CardContent>
+            </Card>
             <Modal
                 open={openChangePasswordModal}
                 onClose={() =>
@@ -533,84 +620,90 @@ const AccountDataForm: React.FC<IAccountDataFormProps> = ({
                 aria-describedby="modal-modal-description"
                 data-size="medium"
             >
-                <Card>
+                <Card variant="md">
                     <CardContent sx={{ m: 3 }}>
-                        <>
-                            <Typography variant="h6" component="h3">
-                                Ustawianie nowego hasła
-                            </Typography>
+                        <Typography
+                            variant="h5"
+                            component="h3"
+                            fontWeight="bold"
+                        >
+                            Zmiana hasła
+                        </Typography>
+                        <Box
+                            component="form"
+                            sx={{ mt: 5 }}
+                            onSubmit={handleSubmitChangePassword(
+                                handleSubmitChangePasswordForm
+                            )}
+                        >
+                            <LabelTextInput
+                                label="Stare hasło"
+                                inputId="oldPassword"
+                                errorText={
+                                    changePasswordFormErrors.oldPassword
+                                        ?.message
+                                }
+                                isPassword={true}
+                                textFieldProps={{
+                                    ...changePasswordRegister("oldPassword"),
+                                }}
+                            />
+                            <LabelTextInput
+                                label="Nowe hasło"
+                                inputId="newPassword"
+                                errorText={
+                                    changePasswordFormErrors.newPassword
+                                        ?.message
+                                }
+                                isPassword={true}
+                                textFieldProps={{
+                                    ...changePasswordRegister("newPassword"),
+                                }}
+                            />
+                            <LabelTextInput
+                                label="Potwierdź hasło"
+                                inputId="confirmPassword"
+                                errorText={
+                                    changePasswordFormErrors.confirmPassword
+                                        ?.message
+                                }
+                                isPassword={true}
+                                textFieldProps={{
+                                    ...changePasswordRegister(
+                                        "confirmPassword"
+                                    ),
+                                }}
+                            />
                             <Box
-                                component="form"
-                                sx={{ mt: 5 }}
-                                onSubmit={handleSubmitChangePassword(
-                                    handleSubmitChangePasswordForm
-                                )}
+                                sx={{
+                                    display: "flex",
+                                    gap: 2,
+                                    mt: 3,
+                                }}
                             >
-                                <LabelTextInput
-                                    label="Stare hasło"
-                                    inputId="oldPassword"
-                                    errorText={
-                                        changePasswordFormErrors.oldPassword
-                                            ?.message
+                                <Button
+                                    variant="outlined"
+                                    onClick={() =>
+                                        handleChangePasswordModal(false)
                                     }
-                                    isPassword={true}
-                                    textFieldProps={{
-                                        ...changePasswordRegister(
-                                            "oldPassword"
-                                        ),
-                                    }}
-                                />
-                                <LabelTextInput
-                                    label="Nowe hasło"
-                                    inputId="newPassword"
-                                    errorText={
-                                        changePasswordFormErrors.newPassword
-                                            ?.message
-                                    }
-                                    isPassword={true}
-                                    textFieldProps={{
-                                        ...changePasswordRegister(
-                                            "newPassword"
-                                        ),
-                                    }}
-                                />
-                                <LabelTextInput
-                                    label="Potwierdź hasło"
-                                    inputId="confirmPassword"
-                                    errorText={
-                                        changePasswordFormErrors.confirmPassword
-                                            ?.message
-                                    }
-                                    isPassword={true}
-                                    textFieldProps={{
-                                        ...changePasswordRegister(
-                                            "confirmPassword"
-                                        ),
-                                    }}
-                                />
-                                <Box
                                     sx={{
-                                        display: "flex",
-                                        alignItems: "center",
-                                        justifyContent: "flex-end",
+                                        flex: 1,
                                     }}
                                 >
-                                    <LoadingButton
-                                        type="submit"
-                                        variant="contained"
-                                        loading={isLoadingChangePasswordForm}
-                                        sx={{
-                                            flexBasis: {
-                                                xs: "100%",
-                                                md: "auto",
-                                            },
-                                        }}
-                                    >
-                                        Zapisz
-                                    </LoadingButton>
-                                </Box>
+                                    Anuluj
+                                </Button>
+                                <LoadingButton
+                                    type="submit"
+                                    variant="contained"
+                                    loading={isLoadingChangePasswordForm}
+                                    sx={{
+                                        flex: 1,
+                                    }}
+                                >
+                                    Zapisz
+                                </LoadingButton>
                             </Box>
-                        </>
+                        </Box>
                     </CardContent>
                 </Card>
             </Modal>
@@ -624,7 +717,9 @@ const AccountDataForm: React.FC<IAccountDataFormProps> = ({
                 data-size="small"
             >
                 <Card>
-                    <CardContent sx={{ m: 3 }}>
+                    <CardContent
+                        sx={{ m: 3, "&:last-child": { paddingBottom: "2rem" } }}
+                    >
                         <>
                             <Typography variant="h6" component="h3">
                                 Usuwanie konta

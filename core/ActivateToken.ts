@@ -1,81 +1,50 @@
 import prisma from "@/prisma";
+import { Prisma } from "@prisma/client";
 import { CoreError } from "@/helpers/errorAndResponseHandlers";
 
-export interface IActivateToken {
-    id: number;
-    token: string;
-    user: number | connectUser;
-    activatedAt: Date;
-    createdAt: Date;
-    createdBy: number | connectUser;
-    updatedAt: Date;
-    updatedBy: number | connectUser;
-}
-
-export interface IActivateTokenWhereClause {
-    id?: number;
-    token?: string;
-    userId?: number;
-    activatedAt?: Date;
-    createdAt?: Date;
-    createdById?: number;
-    updatedAt?: Date;
-    updatedById?: number;
-}
-
-export interface IActivateTokenUpdate {
-    id: number;
-    token: string;
-    userId: { connect: { id: number } };
-    activatedAt: Date;
-    createdAt: Date;
-    createdBy: { connect: { id: number } };
-    updatedAt: Date;
-    updatedBy: { connect: { id: number } };
-}
-
-type connectUser = {
-    connect: {
-        id: number;
-    };
-};
-
-// 2 usage
-export async function getActivateToken(whereClause: IActivateTokenWhereClause) {
+export async function getActivateToken(
+    whereClause: Prisma.ActivateTokenWhereInput,
+    includeOptions?: Prisma.ActivateTokenInclude
+) {
     try {
         const record = await prisma.activateToken.findFirst({
             where: whereClause,
+            include: {
+                user: includeOptions?.user ?? false,
+                createdBy: includeOptions?.createdBy ?? false,
+                updatedBy: includeOptions?.updatedBy ?? false,
+            },
         });
 
-        return { record };
+        return record;
     } catch (error) {
         throw new CoreError(
-            "Wystąpił błąd podczas pobierania tokenu aktywacyjnego"
+            "Wystąpił błąd podczas pobierania tokenu aktywacyjnego",
+            error as string
         );
     }
 }
 
-// 1 usage
 export async function createActivateToken(
-    activateToken: Partial<IActivateToken>
+    activateToken: Prisma.ActivateTokenCreateInput
 ) {
     try {
         const record = await prisma.activateToken.create({
             data: activateToken,
         });
 
-        return { record };
+        return record;
     } catch (error) {
         throw new CoreError(
-            "Wystąpił błąd podczas tworzenia tokenu aktywacyjnego"
+            "Wystąpił błąd podczas tworzenia tokenu aktywacyjnego",
+            error as string
         );
     }
 }
 
-// 1 usage
 export async function updateActivateToken(
     id: number,
-    updatedData: Partial<IActivateTokenUpdate>
+    updatedData: Prisma.ActivateTokenUpdateInput
 ) {
     try {
         const record = await prisma.activateToken.update({
@@ -85,10 +54,11 @@ export async function updateActivateToken(
             data: updatedData,
         });
 
-        return { record };
+        return record;
     } catch (error) {
         throw new CoreError(
-            "Wystąpił błąd podczas aktualizacji tokenu aktywacyjnego"
+            "Wystąpił błąd podczas aktualizacji tokenu aktywacyjnego",
+            error as string
         );
     }
 }

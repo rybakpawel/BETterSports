@@ -1,13 +1,7 @@
 "use client";
 
 import React from "react";
-import {
-    Box,
-    Button,
-    FormHelperText,
-    ToggleButton,
-    ToggleButtonGroup,
-} from "@mui/material";
+import { Box, Button, FormHelperText } from "@mui/material";
 
 interface IButtonInputProps {
     label: string;
@@ -36,76 +30,83 @@ const LabelButtonsInput: React.FC<IButtonInputProps> = ({
     buttons,
     onChange,
 }) => {
-    const buttonFlexBasis = `${100 / buttons.length}%`;
     return (
-        <Box
-            sx={{
-                mb: 2,
-                minWidth: "10rem",
-            }}
-        >
-            <Box
-                sx={{
-                    display: {
-                        xs: "block",
-                        md: "flex",
-                    },
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                }}
-            >
-                <Box sx={{ mb: { xs: 1, md: 0 }, pr: 3, flexBasis: "25%" }}>
-                    <label htmlFor={inputId}>{label}</label>
-                </Box>
+        <Box sx={{ mb: 1.5 }}>
+            <Box sx={{ mb: 1 }}>
                 <Box
-                    sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        flexBasis: "75%",
-                    }}
+                    component="label"
+                    htmlFor={inputId}
+                    sx={(theme) => ({
+                        color: theme.palette.text.primary,
+                        fontSize: 14,
+                        fontWeight: 500,
+                    })}
                 >
-                    <ToggleButtonGroup
-                        color="primary"
-                        value={value}
-                        onChange={onChange}
-                        exclusive
-                        sx={{
-                            display: "flex",
-                            flexGrow: 1,
-                        }}
-                    >
-                        {buttons.map((button) => {
-                            return (
-                                <ToggleButton
-                                    key={button.value}
-                                    value={button.value}
-                                    size="small"
-                                    sx={{
-                                        flexBasis: buttonFlexBasis,
-                                    }}
-                                >
-                                    {button.label}
-                                </ToggleButton>
-                            );
-                        })}
-                    </ToggleButtonGroup>
-                    {isButton && (
-                        <Button
-                            variant="outlined"
-                            sx={{
-                                ml: 2,
-                                height: "40px",
-                                flexShrink: 0,
-                                maxWidth: "calc(100% - 8px)",
-                            }}
-                        >
-                            {buttonText}
-                        </Button>
-                    )}
+                    {label}
                 </Box>
             </Box>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                <Box
+                    sx={(theme) => ({
+                        backgroundColor: theme.palette.background.default,
+                        borderRadius: "12px",
+                        border: `1px solid ${theme.palette.grey[600]}`,
+                        p: 0.5,
+                        display: "flex",
+                        gap: 1,
+                        flexGrow: 1,
+                        height: "48px",
+                        alignItems: "center",
+                    })}
+                >
+                    {buttons.map((button) => {
+                        const isSelected = value === button.value;
+                        return (
+                            <Button
+                                key={button.value}
+                                variant={isSelected ? "contained" : "text"}
+                                fullWidth
+                                onClick={(event) =>
+                                    onChange(event, button.value)
+                                }
+                                sx={(theme) => ({
+                                    height: "40px",
+                                    minHeight: "40px",
+                                    color: isSelected
+                                        ? theme.palette.primary.contrastText
+                                        : theme.palette.text.secondary,
+                                    backgroundColor: isSelected
+                                        ? theme.palette.primary.main
+                                        : "transparent",
+                                    "&:hover": {
+                                        color: isSelected
+                                            ? theme.palette.primary.contrastText
+                                            : theme.palette.text.primary,
+                                        backgroundColor: isSelected
+                                            ? theme.palette.primary.light
+                                            : "transparent",
+                                    },
+                                })}
+                            >
+                                {button.label}
+                            </Button>
+                        );
+                    })}
+                </Box>
+                {isButton && (
+                    <Button
+                        variant="outlined"
+                        sx={{
+                            height: "48px",
+                            flexShrink: 0,
+                        }}
+                    >
+                        {buttonText}
+                    </Button>
+                )}
+            </Box>
             {errorText && (
-                <FormHelperText error sx={{ ml: "25%", minHeight: "20px" }}>
+                <FormHelperText error sx={{ mt: 0.5 }}>
                     {errorText}
                 </FormHelperText>
             )}

@@ -1,7 +1,7 @@
 import NextAuth, { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { getSystemUser, getUser } from "@/core/User";
-import { ApiError, ApiResponse } from "@/helpers/errorAndResponseHandlers";
+import { AppError, ApiResponse } from "@/helpers/errorAndResponseHandlers";
 import { createLog } from "@/core/Log";
 import { LogLevel } from "@prisma/client";
 import { loginUserServerValidation } from "@/validation/server/loginUserServerValidation";
@@ -54,10 +54,11 @@ export const authOptions: NextAuthOptions = {
                     return user;
                 } catch (error) {
                     const systemUser = await getSystemUser();
-                    if (error instanceof ApiError) {
+                    if (error instanceof AppError) {
                         if (systemUser) {
                             await createLog({
                                 level: LogLevel.ERROR,
+                                errorType: error.errorType,
                                 description: error.message,
                                 location: LOCATION,
                                 createdById: systemUser.id,

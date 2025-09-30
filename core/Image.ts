@@ -1,46 +1,31 @@
 import prisma from "@/prisma";
+import { Prisma } from "@prisma/client";
 import { CoreError } from "@/helpers/errorAndResponseHandlers";
 
-export interface IImage {
-    id: number;
-    name: string;
-    url: string;
-    createdAt: Date;
-    createdBy: number | connect;
-    updatedAt: Date;
-    updatedBy: number | connect;
-}
-
-type connect = {
-    connect: {
-        id: number;
-    };
-};
-
-// 1 usage
-export async function createImage(image: Partial<IImage>) {
+export async function createImage(image: Prisma.ImageCreateInput) {
     try {
         const record = await prisma.image.create({
             data: image,
         });
 
-        return { record };
+        return record;
     } catch (error) {
-        throw new CoreError("Wystąpił błąd podczas tworzenia obrazu");
+        throw new CoreError(
+            "Wystąpił błąd podczas tworzenia obrazu",
+            error as string
+        );
     }
 }
 
-// 1 usage
 export async function deleteImage(imageId: number) {
     try {
         await prisma.image.delete({
             where: { id: imageId },
         });
-
-        console.log(
-            `Obraz o ID ${imageId} został usunięty, a powiązane pola w User ustawione na NULL.`
-        );
     } catch (error) {
-        throw new CoreError("Wystąpił błąd podczas usuwania obrazu");
+        throw new CoreError(
+            "Wystąpił błąd podczas usuwania obrazu",
+            error as string
+        );
     }
 }

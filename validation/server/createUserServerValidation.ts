@@ -1,10 +1,11 @@
 import prisma from "@/prisma";
-import { IUser } from "@/core/User";
-import { createUserValidation } from "@/validation/common/createUserValidation";
+import {
+    createUserValidation,
+    CreateUserType,
+} from "@/validation/common/createUserValidation";
 import { LogicError } from "@/helpers/errorAndResponseHandlers";
 
-export const createUserServerValidation = async (data: IUser) => {
-    // TODO pomyśleć nad zmianą typu na CreateUserType
+export const createUserServerValidation = async (data: CreateUserType) => {
     const result = createUserValidation.safeParse(data);
 
     if (!result.success) {

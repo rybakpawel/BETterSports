@@ -5,13 +5,14 @@ import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
     Box,
+    Button,
     Card,
     CardContent,
-    Divider,
     Modal,
     Typography,
 } from "@mui/material";
 import { LoadingButton } from "@mui/lab";
+import { Save } from "@mui/icons-material";
 import "dayjs/locale/pl";
 import LabelTextInput from "../form/LabelTextInput";
 import LabelDateInput from "../form/LabelDateInput";
@@ -199,123 +200,207 @@ const UserDataForm: React.FC<IUserDataFormProps> = ({
 
     return (
         <>
-            <Box
-                component="form"
-                onSubmit={handleSubmitUserData(handleSubmitUserDataForm)}
-                sx={{ p: 2 }}
-            >
-                <Typography variant="h5" component="h2">
-                    Dane użytkownika
-                </Typography>
-                <Divider sx={{ my: 2 }} />
-                <LabelTextInput
-                    label="Imię"
-                    inputId="name"
-                    errorText={userDataFormErrors.name?.message}
-                    textFieldProps={{
-                        ...userDataRegister("name"),
-                    }}
-                />
-                <LabelTextInput
-                    label="Nazwisko"
-                    inputId="lastName"
-                    errorText={userDataFormErrors.lastName?.message}
-                    textFieldProps={{
-                        ...userDataRegister("lastName"),
-                    }}
-                />
-                <Controller
-                    name="birthDate"
-                    control={userDataControl}
-                    render={({ field }) => (
-                        <LabelDateInput
-                            inputId="birthDate"
-                            label="Data urodzenia"
-                            value={field.value ?? null}
-                            onChange={field.onChange}
-                            errorText={userDataFormErrors.birthDate?.message}
-                        />
-                    )}
-                />
-                <Controller
-                    name="gender"
-                    control={userDataControl}
-                    render={({ field }) => (
-                        <LabelButtonsInput
-                            label="Płeć"
-                            inputId="gender"
-                            value={field.value ?? ""}
-                            errorText={userDataFormErrors.gender?.message}
-                            buttons={[
-                                { value: Gender.FEMALE, label: "Kobieta" },
-                                { value: Gender.MALE, label: "Mężczyzna" },
-                            ]}
-                            onChange={(event, newValue) => {
-                                field.onChange(newValue || "");
-                            }}
-                        />
-                    )}
-                />
-                <Controller
-                    name="nationality"
-                    control={userDataControl}
-                    render={({ field }) => (
-                        <LabelSelectInput
-                            label="Narodowość"
-                            inputId="nationality"
-                            value={field.value?.toString() ?? ""}
-                            errorText={userDataFormErrors.nationality?.message}
-                            dataList={nationalitiesList}
-                            onChange={(event) => {
-                                field.onChange(Number(event.target.value));
-                            }}
-                        />
-                    )}
-                />
-                <Controller
-                    name="city"
-                    control={userDataControl}
-                    render={({ field, fieldState }) => (
-                        <LabelAutocompleteInput
-                            label="Miasto"
-                            inputId="city"
-                            inputValue={cityInput}
-                            defaultId={defaultCityId}
-                            isButton={true}
-                            buttonText="Dodaj nowe miasto"
-                            errorText={fieldState.error?.message}
-                            dataList={citiesList}
-                            isLoadingData={isLoadingCities}
-                            onChange={(event, newValue) =>
-                                field.onChange(newValue ? newValue.id : 0)
-                            }
-                            onInputChange={(event, newInputValue, reason) => {
-                                setCityInput(newInputValue);
-                            }}
-                            onButtonClick={handleCreateCity}
-                        />
-                    )}
-                />
-                <Box
-                    sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "flex-end",
-                        mb: userDataFormErrors.city ? 0 : 2,
-                    }}
+            <Card>
+                <CardContent
+                    sx={{ p: 4, "&:last-child": { paddingBottom: "2rem" } }}
                 >
-                    <LoadingButton
-                        type="submit"
-                        variant="contained"
-                        loading={isLoading}
-                        sx={{
-                            flexBasis: { xs: "100%", md: "auto" },
-                        }}
+                    <Typography
+                        variant="h4"
+                        sx={(theme) => ({
+                            color: theme.palette.text.primary,
+                            fontWeight: 700,
+                            mb: 3,
+                        })}
                     >
-                        Zapisz
-                    </LoadingButton>
-                </Box>
-            </Box>
+                        Dane osobowe
+                    </Typography>
+
+                    <Box
+                        component="form"
+                        onSubmit={handleSubmitUserData(
+                            handleSubmitUserDataForm
+                        )}
+                    >
+                        {/* First row: Name and Last Name */}
+                        <Box
+                            sx={{
+                                display: { xs: "block", md: "flex" },
+                                gap: 2,
+                                mb: 2,
+                            }}
+                        >
+                            <Box sx={{ flex: 1 }}>
+                                <LabelTextInput
+                                    label="Imię"
+                                    inputId="name"
+                                    errorText={userDataFormErrors.name?.message}
+                                    textFieldProps={{
+                                        placeholder: "Wprowadź swoje imię",
+                                        ...userDataRegister("name"),
+                                    }}
+                                />
+                            </Box>
+                            <Box sx={{ flex: 1 }}>
+                                <LabelTextInput
+                                    label="Nazwisko"
+                                    inputId="lastName"
+                                    errorText={
+                                        userDataFormErrors.lastName?.message
+                                    }
+                                    textFieldProps={{
+                                        placeholder: "Wprowadź swoje nazwisko",
+                                        ...userDataRegister("lastName"),
+                                    }}
+                                />
+                            </Box>
+                        </Box>
+
+                        {/* Second row: Birth Date and Gender */}
+                        <Box
+                            sx={{
+                                display: { xs: "block", md: "flex" },
+                                gap: 2,
+                                mb: 2,
+                            }}
+                        >
+                            <Box sx={{ flex: 1 }}>
+                                <Controller
+                                    name="birthDate"
+                                    control={userDataControl}
+                                    render={({ field }) => (
+                                        <LabelDateInput
+                                            inputId="birthDate"
+                                            label="Data urodzenia"
+                                            value={field.value ?? null}
+                                            onChange={field.onChange}
+                                            errorText={
+                                                userDataFormErrors.birthDate
+                                                    ?.message
+                                            }
+                                        />
+                                    )}
+                                />
+                            </Box>
+                            <Box sx={{ flex: 1 }}>
+                                <Controller
+                                    name="gender"
+                                    control={userDataControl}
+                                    render={({ field }) => (
+                                        <LabelButtonsInput
+                                            label="Płeć"
+                                            inputId="gender"
+                                            value={field.value ?? ""}
+                                            errorText={
+                                                userDataFormErrors.gender
+                                                    ?.message
+                                            }
+                                            buttons={[
+                                                {
+                                                    value: Gender.MALE,
+                                                    label: "Male",
+                                                },
+                                                {
+                                                    value: Gender.FEMALE,
+                                                    label: "Female",
+                                                },
+                                            ]}
+                                            onChange={(event, newValue) => {
+                                                field.onChange(newValue || "");
+                                            }}
+                                        />
+                                    )}
+                                />
+                            </Box>
+                        </Box>
+
+                        {/* Third row: Nationality and City */}
+                        <Box
+                            sx={{
+                                display: { xs: "block", md: "flex" },
+                                gap: 2,
+                                mb: 2,
+                            }}
+                        >
+                            <Box sx={{ flex: 1 }}>
+                                <Controller
+                                    name="nationality"
+                                    control={userDataControl}
+                                    render={({ field }) => (
+                                        <LabelSelectInput
+                                            label="Narodowość"
+                                            inputId="nationality"
+                                            value={
+                                                field.value?.toString() ?? ""
+                                            }
+                                            errorText={
+                                                userDataFormErrors.nationality
+                                                    ?.message
+                                            }
+                                            dataList={nationalitiesList}
+                                            onChange={(event) => {
+                                                field.onChange(
+                                                    Number(event.target.value)
+                                                );
+                                            }}
+                                        />
+                                    )}
+                                />
+                            </Box>
+                            <Box sx={{ flex: 1 }}>
+                                <Controller
+                                    name="city"
+                                    control={userDataControl}
+                                    render={({ field, fieldState }) => (
+                                        <LabelAutocompleteInput
+                                            label="Miasto"
+                                            inputId="city"
+                                            inputValue={cityInput}
+                                            defaultId={defaultCityId}
+                                            isButton={true}
+                                            buttonText="+ Dodaj nowe miasto"
+                                            errorText={
+                                                fieldState.error?.message
+                                            }
+                                            dataList={citiesList}
+                                            isLoadingData={isLoadingCities}
+                                            onChange={(event, newValue) =>
+                                                field.onChange(
+                                                    newValue ? newValue.id : 0
+                                                )
+                                            }
+                                            onInputChange={(
+                                                event,
+                                                newInputValue,
+                                                reason
+                                            ) => {
+                                                setCityInput(newInputValue);
+                                            }}
+                                            onButtonClick={handleCreateCity}
+                                        />
+                                    )}
+                                />
+                            </Box>
+                        </Box>
+
+                        <Box
+                            sx={{
+                                mt: 4,
+                                display: "flex",
+                                justifyContent: "flex-end",
+                            }}
+                        >
+                            <LoadingButton
+                                type="submit"
+                                variant="contained"
+                                loading={isLoading}
+                                startIcon={<Save />}
+                            >
+                                Zapisz zmiany
+                            </LoadingButton>
+                        </Box>
+                    </Box>
+                </CardContent>
+            </Card>
             <Modal
                 open={openAddCityModal}
                 onClose={() => handleCreateCity()}
@@ -323,9 +408,13 @@ const UserDataForm: React.FC<IUserDataFormProps> = ({
                 aria-describedby="modal-modal-description"
                 data-size="medium"
             >
-                <Card>
+                <Card variant="md">
                     <CardContent sx={{ m: 3 }}>
-                        <Typography variant="h6" component="h3">
+                        <Typography
+                            variant="h5"
+                            component="h3"
+                            fontWeight="bold"
+                        >
                             Dodawanie nowego miasta
                         </Typography>
                         <Box
@@ -367,16 +456,25 @@ const UserDataForm: React.FC<IUserDataFormProps> = ({
                             <Box
                                 sx={{
                                     display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "flex-end",
+                                    gap: 2,
+                                    mt: 3,
                                 }}
                             >
+                                <Button
+                                    variant="outlined"
+                                    onClick={() => setOpenAddCityModal(false)}
+                                    sx={{
+                                        flex: 1,
+                                    }}
+                                >
+                                    Anuluj
+                                </Button>
                                 <LoadingButton
                                     type="submit"
                                     variant="contained"
                                     loading={isLoadingModal}
                                     sx={{
-                                        flexBasis: { xs: "100%", md: "auto" },
+                                        flex: 1,
                                     }}
                                 >
                                     Zapisz

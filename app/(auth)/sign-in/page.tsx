@@ -11,18 +11,13 @@ import {
     Button,
     Card,
     CardContent,
-    FormControl,
-    FormHelperText,
-    IconButton,
-    InputAdornment,
-    InputLabel,
     Modal,
-    OutlinedInput,
     TextField,
     Typography,
 } from "@mui/material";
 import { LoadingButton } from "@mui/lab";
-import { Visibility, VisibilityOff } from "@mui/icons-material";
+import LabelTextInput from "@/components/form/LabelTextInput";
+import AuthPageWrapper from "@/components/sections/AuthPageWrapper";
 import {
     loginUserValidation,
     LoginUserType,
@@ -36,7 +31,6 @@ import ApiResponseAlert, {
 } from "@/components/alerts/ApiResponseAlert";
 
 export default function SignIn() {
-    const [showPassword, setShowPassword] = useState<boolean>(false);
     const [isLoadingLoginForm, setIsLoadingLoginForm] = useState(false);
     const [isLoadingForgotPasswordForm, setIsLoadingForgotPasswordForm] =
         useState<boolean>(false);
@@ -142,151 +136,250 @@ export default function SignIn() {
 
     return (
         <>
-            <Card
-                sx={{
-                    my: "5vh",
-                    height: "90vh",
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "center",
-                }}
-            >
-                <CardContent>
-                    <Typography variant="h5" component="h1">
-                        BETter - daj się ponieść stadionowej atmosferze!
-                    </Typography>
-                    <Box
-                        component="form"
-                        sx={{ my: 5 }}
-                        onSubmit={handleSubmitLogin(handleSubmitLoginForm)}
-                    >
-                        <TextField
-                            id="email"
-                            label="E-mail"
-                            {...loginRegister("email")}
-                            error={!!loginErrors.email}
-                            helperText={loginErrors.email?.message}
-                            variant="outlined"
+            <AuthPageWrapper>
+                <Box
+                    sx={(theme) => ({
+                        backgroundColor: theme.palette.background.default,
+                        borderRadius: "16px",
+                        p: 0.5,
+                        mb: 4,
+                        display: "flex",
+                        gap: 1,
+                    })}
+                >
+                    <Button variant="contained" color="primary" fullWidth>
+                        Logowanie
+                    </Button>
+                    <Link href="/sign-up" style={{ width: "100%" }}>
+                        <Button
+                            variant="text"
                             fullWidth
-                            sx={{
-                                mb: loginErrors.email ? 0 : 2,
-                            }}
-                        />
-                        <FormControl
-                            variant="outlined"
-                            fullWidth
-                            error={!!loginErrors.password}
+                            sx={(theme) => ({
+                                py: 1.5,
+                                color: theme.palette.text.secondary,
+                                "&:hover": {
+                                    color: theme.palette.text.primary,
+                                    backgroundColor: "transparent",
+                                },
+                            })}
                         >
-                            <InputLabel htmlFor="password">Hasło</InputLabel>
-                            <OutlinedInput
-                                id="password"
-                                label="Hasło"
-                                type={showPassword ? "text" : "password"}
-                                {...loginRegister("password")}
-                                endAdornment={
-                                    <InputAdornment position="end">
-                                        <IconButton
-                                            aria-label="toggle password visibility"
-                                            onClick={() => {
-                                                setShowPassword(!showPassword);
-                                            }}
-                                            edge="end"
-                                        >
-                                            {showPassword ? (
-                                                <VisibilityOff />
-                                            ) : (
-                                                <Visibility />
-                                            )}
-                                        </IconButton>
-                                    </InputAdornment>
-                                }
-                            />
-                            <FormHelperText>
-                                {loginErrors.password?.message}
-                            </FormHelperText>
-                        </FormControl>
-                        <Box
+                            Rejestracja
+                        </Button>
+                    </Link>
+                </Box>
+                <Box
+                    component="form"
+                    sx={{ my: 5 }}
+                    onSubmit={handleSubmitLogin(handleSubmitLoginForm)}
+                >
+                    <LabelTextInput
+                        label="E-mail"
+                        inputId="email"
+                        errorText={loginErrors.email?.message}
+                        textFieldProps={{
+                            placeholder: "Wprowadź e-mail",
+                            ...loginRegister("email"),
+                        }}
+                    />
+                    <LabelTextInput
+                        label="Hasło"
+                        inputId="password"
+                        isPassword={true}
+                        errorText={loginErrors.password?.message}
+                        textFieldProps={{
+                            placeholder: "Wprowadź hasło",
+                            ...loginRegister("password"),
+                        }}
+                    />
+                    <Box
+                        sx={{
+                            textAlign: "right",
+                            mb: 5,
+                        }}
+                    >
+                        <Button
+                            variant="text"
                             sx={{
                                 textAlign: "right",
-                                mb: 5,
+                                padding: "0",
+                                ":hover": {
+                                    color: "primary.dark",
+                                    backgroundColor: "inherit",
+                                },
+                            }}
+                            onClick={() => setOpenForgotPasswordModal(true)}
+                        >
+                            Zapomniałem hasła
+                        </Button>
+                    </Box>
+                    <LoadingButton
+                        type="submit"
+                        fullWidth={true}
+                        variant="contained"
+                        loading={isLoadingLoginForm}
+                        sx={{ mb: 4 }}
+                    >
+                        Zaloguj
+                    </LoadingButton>
+                    <Box sx={{ textAlign: "center" }}>
+                        <Typography color="text.secondary" fontSize={14}>
+                            Nie masz konta?{" "}
+                            <Link
+                                href="/sign-up"
+                                style={{ textDecoration: "none" }}
+                            >
+                                <Button
+                                    variant="text"
+                                    sx={(theme) => ({
+                                        color: theme.palette.primary.main,
+                                        textTransform: "none",
+                                        fontSize: 14,
+                                        p: 0,
+                                        minWidth: "auto",
+                                        "&:hover": {
+                                            color: theme.palette.primary.light,
+                                            backgroundColor: "transparent",
+                                        },
+                                    })}
+                                >
+                                    Zarejestruj się
+                                </Button>
+                            </Link>
+                        </Typography>
+                    </Box>
+                </Box>
+                <Modal
+                    open={openForgotPasswordModal}
+                    onClose={() => setOpenForgotPasswordModal(false)}
+                    aria-labelledby="modal-modal-title"
+                    aria-describedby="modal-modal-description"
+                    slotProps={{
+                        backdrop: {
+                            sx: {
+                                backgroundColor: "rgba(0, 0, 0, 0.5)",
+                            },
+                        },
+                    }}
+                    sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        p: 2,
+                    }}
+                >
+                    <Card variant="sm">
+                        <CardContent
+                            sx={{
+                                p: 4,
+                                "&:last-child": { paddingBottom: "2rem" },
                             }}
                         >
-                            <Button
-                                variant="text"
+                            <Box sx={{ textAlign: "center", mb: 3 }}>
+                                <Box
+                                    sx={(theme) => ({
+                                        backgroundColor:
+                                            theme.palette.info.main,
+                                        p: 1.5,
+                                        borderRadius: 3,
+                                        display: "inline-block",
+                                        mb: 2,
+                                    })}
+                                >
+                                    <Typography
+                                        component="span"
+                                        sx={(theme) => ({
+                                            color: theme.palette.info
+                                                .contrastText,
+                                            fontSize: 24,
+                                            fontWeight: 800,
+                                        })}
+                                    >
+                                        🔑
+                                    </Typography>
+                                </Box>
+                                <Typography
+                                    variant="h5"
+                                    component="h2"
+                                    sx={(theme) => ({
+                                        color: theme.palette.text.primary,
+                                        fontWeight: 700,
+                                        mb: 1,
+                                    })}
+                                >
+                                    Zresetuj hasło
+                                </Typography>
+                                <Typography
+                                    sx={(theme) => ({
+                                        color: theme.palette.text.secondary,
+                                        fontSize: 14,
+                                    })}
+                                >
+                                    Wprowadź swój adres e-mail, aby otrzymać
+                                    instrukcję resetowania hasła
+                                </Typography>
+                            </Box>
+
+                            <Box
+                                component="form"
+                                onSubmit={handleForgotPasswordSubmit(
+                                    handleSubmitForgotPasswordForm
+                                )}
                                 sx={{
-                                    textAlign: "right",
-                                    padding: "0",
-                                    ":hover": {
-                                        color: "primary.dark",
-                                        backgroundColor: "inherit",
-                                    },
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    gap: 3,
                                 }}
-                                onClick={() => setOpenForgotPasswordModal(true)}
                             >
-                                Zapomniałem hasła
-                            </Button>
-                        </Box>
-                        <LoadingButton
-                            type="submit"
-                            fullWidth={true}
-                            variant="contained"
-                            loading={isLoadingLoginForm}
-                            sx={{ mb: 2 }}
-                        >
-                            Zaloguj
-                        </LoadingButton>
-                        <Link href={"/sign-up"}>
-                            <Button fullWidth={true} variant="outlined">
-                                Rejestracja
-                            </Button>
-                        </Link>
-                    </Box>
-                </CardContent>
-            </Card>
-            <Modal
-                open={openForgotPasswordModal}
-                onClose={() => setOpenForgotPasswordModal(false)}
-                aria-labelledby="modal-modal-title"
-                aria-describedby="modal-modal-description"
-                data-size="small"
-            >
-                <Card>
-                    <CardContent sx={{ m: 3 }}>
-                        <Typography variant="h6" component="h3">
-                            Zresetuj hasło
-                        </Typography>
-                        <Box
-                            component="form"
-                            sx={{ mt: 5 }}
-                            onSubmit={handleForgotPasswordSubmit(
-                                handleSubmitForgotPasswordForm
-                            )}
-                        >
-                            <TextField
-                                id="forgot-email"
-                                label="E-mail"
-                                {...forgotPasswordRegister("email")}
-                                variant="outlined"
-                                fullWidth
-                                error={!!forgotErrors.email}
-                                helperText={forgotErrors.email?.message}
-                                sx={{
-                                    mb: forgotErrors.email ? 0 : 2,
-                                }}
-                            />
-                            <LoadingButton
-                                type="submit"
-                                fullWidth={true}
-                                variant="contained"
-                                loading={isLoadingForgotPasswordForm}
-                                sx={{ mb: 2 }}
-                            >
-                                Wyślij na e-mail
-                            </LoadingButton>
-                        </Box>
-                    </CardContent>
-                </Card>
-            </Modal>
+                                <LabelTextInput
+                                    label="E-mail"
+                                    inputId="forgot-email"
+                                    errorText={forgotErrors.email?.message}
+                                    textFieldProps={{
+                                        placeholder:
+                                            "Wprowadź swój adres e-mail",
+                                        ...forgotPasswordRegister("email"),
+                                    }}
+                                />
+
+                                <Box sx={{ display: "flex", gap: 1.5 }}>
+                                    <Button
+                                        type="button"
+                                        variant="outlined"
+                                        fullWidth
+                                        onClick={() =>
+                                            setOpenForgotPasswordModal(false)
+                                        }
+                                        sx={{
+                                            py: 1.5,
+                                            px: 2,
+                                            fontSize: 14,
+                                            fontWeight: 500,
+                                            textTransform: "none",
+                                        }}
+                                    >
+                                        Anuluj
+                                    </Button>
+                                    <LoadingButton
+                                        type="submit"
+                                        variant="contained"
+                                        fullWidth
+                                        loading={isLoadingForgotPasswordForm}
+                                        sx={{
+                                            py: 1.5,
+                                            px: 2,
+                                            fontSize: 14,
+                                            fontWeight: 600,
+                                            textTransform: "none",
+                                        }}
+                                    >
+                                        Wyślij link
+                                    </LoadingButton>
+                                </Box>
+                            </Box>
+                        </CardContent>
+                    </Card>
+                </Modal>
+            </AuthPageWrapper>
             <ApiResponseAlert
                 open={isApiResponseVisible}
                 onClose={() => setIsApiResponseVisible(false)}

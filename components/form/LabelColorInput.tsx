@@ -26,59 +26,45 @@ const LabelColorInput: React.FC<IColorInputProps> = ({
     onChange,
 }) => {
     return (
-        <Box
-            sx={{
-                mb: 2,
-                minWidth: "10rem",
-            }}
-        >
-            <Box
-                sx={{
-                    display: {
-                        xs: "block",
-                        md: "flex",
-                    },
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                }}
-            >
-                <Box sx={{ mb: { xs: 1, md: 0 }, pr: 3, flexBasis: "25%" }}>
-                    <label htmlFor={inputId}>{label}</label>
-                </Box>
+        <Box sx={{ mb: 1.5 }}>
+            <Box sx={{ mb: 1 }}>
                 <Box
-                    sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        flexBasis: "75%",
-                    }}
+                    component="label"
+                    htmlFor={inputId}
+                    sx={(theme) => ({
+                        color: theme.palette.text.primary,
+                        fontSize: 14,
+                        fontWeight: 500,
+                    })}
                 >
-                    <MuiColorInput
-                        format="hex"
-                        value={inputValue}
-                        onChange={onChange}
-                        size="small"
-                        isAlphaHidden={true}
-                        sx={{
-                            flexGrow: "1",
-                        }}
-                    />
-                    {isButton && (
-                        <Button
-                            variant="outlined"
-                            sx={{
-                                ml: 2,
-                                height: "40px",
-                                flexShrink: 0,
-                                maxWidth: "calc(100% - 8px)",
-                            }}
-                        >
-                            {buttonText}
-                        </Button>
-                    )}
+                    {label}
                 </Box>
             </Box>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                <MuiColorInput
+                    format="hex"
+                    value={inputValue}
+                    onChange={onChange}
+                    size="small"
+                    isAlphaHidden={true}
+                    sx={{
+                        flexGrow: "1",
+                    }}
+                />
+                {isButton && (
+                    <Button
+                        variant="outlined"
+                        sx={{
+                            height: "48px",
+                            flexShrink: 0,
+                        }}
+                    >
+                        {buttonText}
+                    </Button>
+                )}
+            </Box>
             {errorText && (
-                <FormHelperText error sx={{ ml: "25%", minHeight: "20px" }}>
+                <FormHelperText error sx={{ mt: 0.5 }}>
                     {errorText}
                 </FormHelperText>
             )}

@@ -48,9 +48,18 @@ const MobileHeaderMenu = () => {
                 }}
                 open={Boolean(anchorElNav)}
                 onClose={handleCloseNavMenu}
-                sx={{
+                sx={(theme) => ({
                     display: { xs: "block", md: "none" },
-                }}
+                    "& .MuiPaper-root": {
+                        backgroundColor: `${theme.palette.background.paper} !important`,
+                        border: `1px solid ${theme.palette.grey[600]}`,
+                        borderRadius: 12,
+                        "&::before": {
+                            display: "none !important",
+                        },
+                        "--Paper-overlay": "none !important",
+                    },
+                })}
             >
                 {menu.map((page) => (
                     <MenuItem key={page} onClick={handleCloseNavMenu}>

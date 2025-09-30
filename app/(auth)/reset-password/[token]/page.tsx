@@ -3,20 +3,10 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useParams, useRouter } from "next/navigation";
-import {
-    Box,
-    Card,
-    CardContent,
-    FormControl,
-    FormHelperText,
-    IconButton,
-    InputAdornment,
-    InputLabel,
-    OutlinedInput,
-    Typography,
-} from "@mui/material";
+import { Box, Button } from "@mui/material";
 import { LoadingButton } from "@mui/lab";
-import { Visibility, VisibilityOff } from "@mui/icons-material";
+import LabelTextInput from "@/components/form/LabelTextInput";
+import AuthPageWrapper from "@/components/sections/AuthPageWrapper";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
     resetPasswordValidation,
@@ -28,9 +18,6 @@ import ApiResponseAlert, {
 
 export default function ResetPassword() {
     const [isLoading, setIsLoading] = useState<boolean>(false);
-    const [showPassword, setShowPassword] = useState<boolean>(false);
-    const [showConfirmPassword, setShowConfirmPassword] =
-        useState<boolean>(false);
     const [apiResponse, setApiResponse] = useState<ApiResponse | null>(null);
     const [isApiResponseVisible, setIsApiResponseVisible] =
         useState<boolean>(false);
@@ -74,107 +61,66 @@ export default function ResetPassword() {
 
     return (
         <>
-            <Card
-                sx={{
-                    my: "5vh",
-                    height: "90vh",
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "center",
-                }}
-            >
-                <CardContent sx={{ m: 3 }}>
-                    <Typography variant="h5" component="h1">
-                        Wprowadź nowe hasło
-                    </Typography>
-                    <Box
-                        component="form"
-                        sx={{ my: 5 }}
-                        onSubmit={handleSubmit(handleSubmitForm)}
-                    >
-                        <FormControl
-                            variant="outlined"
-                            fullWidth
-                            sx={{ mb: errors.password ? 0 : 2 }}
-                            error={!!errors.password}
-                        >
-                            <InputLabel htmlFor="password">Hasło</InputLabel>
-                            <OutlinedInput
-                                id="password"
-                                type={showPassword ? "text" : "password"}
-                                label="Hasło"
-                                {...register("password")}
-                                endAdornment={
-                                    <InputAdornment position="end">
-                                        <IconButton
-                                            onClick={() =>
-                                                setShowPassword(!showPassword)
-                                            }
-                                            edge="end"
-                                        >
-                                            {showPassword ? (
-                                                <VisibilityOff />
-                                            ) : (
-                                                <Visibility />
-                                            )}
-                                        </IconButton>
-                                    </InputAdornment>
-                                }
-                            />
-                            <FormHelperText>
-                                {errors.password?.message}
-                            </FormHelperText>
-                        </FormControl>
+            <AuthPageWrapper variant="reset-password">
+                <Box
+                    component="form"
+                    sx={{ my: 5 }}
+                    onSubmit={handleSubmit(handleSubmitForm)}
+                >
+                    <LabelTextInput
+                        label="Hasło"
+                        inputId="password"
+                        isPassword={true}
+                        errorText={errors.password?.message}
+                        textFieldProps={{
+                            placeholder: "Wprowadź nowe hasło",
+                            ...register("password"),
+                        }}
+                    />
+                    <LabelTextInput
+                        label="Potwierdź hasło"
+                        inputId="confirmPassword"
+                        isPassword={true}
+                        errorText={errors.confirmPassword?.message}
+                        textFieldProps={{
+                            placeholder: "Potwierdź nowe hasło",
+                            ...register("confirmPassword"),
+                        }}
+                    />
 
-                        <FormControl
-                            variant="outlined"
-                            fullWidth
-                            sx={{ mb: 5 }}
-                            error={!!errors.confirmPassword}
-                        >
-                            <InputLabel htmlFor="confirmPassword">
-                                Potwierdź hasło
-                            </InputLabel>
-                            <OutlinedInput
-                                id="confirmPassword"
-                                type={showConfirmPassword ? "text" : "password"}
-                                label="Potwierdź hasło"
-                                {...register("confirmPassword")}
-                                endAdornment={
-                                    <InputAdornment position="end">
-                                        <IconButton
-                                            onClick={() =>
-                                                setShowConfirmPassword(
-                                                    !showConfirmPassword
-                                                )
-                                            }
-                                            edge="end"
-                                        >
-                                            {showConfirmPassword ? (
-                                                <VisibilityOff />
-                                            ) : (
-                                                <Visibility />
-                                            )}
-                                        </IconButton>
-                                    </InputAdornment>
-                                }
-                            />
-                            <FormHelperText>
-                                {errors.confirmPassword?.message}
-                            </FormHelperText>
-                        </FormControl>
-
+                    <Box sx={{ mt: 4 }}>
                         <LoadingButton
                             type="submit"
                             fullWidth
                             variant="contained"
                             loading={isLoading}
+                            sx={{ mb: 2 }}
                         >
                             Ustaw hasło
                         </LoadingButton>
+
+                        <Button
+                            fullWidth
+                            variant="outlined"
+                            onClick={() => router.push("/sign-in")}
+                            sx={(theme) => ({
+                                backgroundColor:
+                                    theme.palette.background.default,
+                                borderColor: theme.palette.grey[600],
+                                color: theme.palette.text.secondary,
+                                "&:hover": {
+                                    borderColor: theme.palette.grey[600],
+                                    color: theme.palette.text.primary,
+                                    backgroundColor:
+                                        theme.palette.background.default,
+                                },
+                            })}
+                        >
+                            Wróć do logowania
+                        </Button>
                     </Box>
-                </CardContent>
-            </Card>
+                </Box>
+            </AuthPageWrapper>
 
             <ApiResponseAlert
                 open={isApiResponseVisible}

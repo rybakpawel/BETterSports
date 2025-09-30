@@ -45,7 +45,9 @@ export async function getSports(): Promise<ApiResponse<{ sports: Sport[] }>> {
             await createLog({
                 level: LogLevel.ERROR,
                 errorType: error.errorType,
-                description: error.message,
+                description:
+                    error.message +
+                    (error.messageLog ? ": " + error.messageLog : ""),
                 location: LOCATION,
                 createdById: userId,
                 updatedById: userId,
@@ -57,7 +59,8 @@ export async function getSports(): Promise<ApiResponse<{ sports: Sport[] }>> {
             level: LogLevel.ERROR,
             errorType: ErrorType.APP,
             description:
-                "Wewnętrzny błąd serwera podczas pobierania wszystkich sportów",
+                "Wewnętrzny błąd serwera podczas pobierania wszystkich sportów: " +
+                error,
             location: LOCATION,
             createdById: userId,
             updatedById: userId,

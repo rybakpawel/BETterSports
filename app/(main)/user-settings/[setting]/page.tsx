@@ -3,13 +3,13 @@ import {
     Card,
     CardContent,
     Container,
-    List,
-    ListItemButton,
-    ListItemText,
     Typography,
+    Button,
 } from "@mui/material";
+import { Settings, Person, CreditCard, Tune } from "@mui/icons-material";
 import UserDataForm from "@/components/sections/UserDataForm";
 import AccountDataForm from "@/components/sections/AccountDataForm";
+import PreferencesForm from "@/components/sections/PreferencesForm";
 import { getUserSettings } from "@/logic/getUserSettings";
 import { getSports } from "@/logic/getSports";
 import { getCountries } from "@/logic/getCountries";
@@ -57,137 +57,246 @@ export default async function UserSettings({
     const settings = await fetchSettings();
 
     return (
-        <main>
-            <Container
-                sx={{
-                    display: "flex",
-                    flexDirection: { xs: "column", md: "row" },
-                    justifyContent: "space-between",
-                    my: 5,
-                }}
-            >
-                <Card sx={{ flexBasis: "25%" }}>
-                    <CardContent
+        <Box sx={{ backgroundColor: "#121212", minHeight: "100vh" }}>
+            <Container maxWidth="lg" sx={{ px: 6, py: 8 }}>
+                {/* Settings Header */}
+                <Box sx={{ mb: 4, maxWidth: 1200, mx: "auto" }}>
+                    <Box
                         sx={{
-                            p: 0,
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 1.5,
+                            mb: 0.5,
                         }}
                     >
+                        <Settings sx={{ color: "#F5C518", fontSize: 30 }} />
                         <Typography
-                            variant="h5"
-                            component="h1"
+                            variant="h4"
                             sx={{
-                                p: "16px",
+                                color: "#ffffff",
+                                fontWeight: 700,
+                                fontSize: 30,
                             }}
                         >
                             Ustawienia
                         </Typography>
-                        <List component="nav" sx={{ p: 0 }}>
-                            <ListItemButton
-                                selected={setting === "user-data"}
-                                href="/user-settings/user-data"
-                            >
-                                <ListItemText
-                                    primary="Dane użytkownika"
+                    </Box>
+                    <Typography sx={{ color: "#9CA3AF", fontSize: 16 }}>
+                        Zarządzaj swoim kontem i preferencjami
+                    </Typography>
+                </Box>
+
+                {/* Settings Container */}
+                <Box
+                    sx={{
+                        display: "flex",
+                        gap: 4,
+                        maxWidth: 1200,
+                        mx: "auto",
+                        flexDirection: { xs: "column", lg: "row" },
+                    }}
+                >
+                    {/* Settings Sidebar */}
+                    <Box
+                        sx={{
+                            width: { xs: "100%", lg: "25%" },
+                            flexShrink: 0,
+                        }}
+                    >
+                        <Card
+                            sx={{
+                                position: "sticky",
+                                top: 96,
+                            }}
+                        >
+                            <CardContent sx={{ p: 3 }}>
+                                <Box
                                     sx={{
-                                        color:
+                                        display: "flex",
+                                        flexDirection: "column",
+                                        gap: 1,
+                                    }}
+                                >
+                                    <Button
+                                        variant={
                                             setting === "user-data"
-                                                ? "background.default"
-                                                : "inherit",
-                                        "&:hover": {
+                                                ? "contained"
+                                                : "text"
+                                        }
+                                        startIcon={<Person />}
+                                        href="/user-settings/user-data"
+                                        sx={{
+                                            justifyContent: "flex-start",
+                                            textAlign: "left",
+                                            px: 2,
+                                            py: 1.5,
+                                            backgroundColor:
+                                                setting === "user-data"
+                                                    ? "#F5C518"
+                                                    : "transparent",
                                             color:
                                                 setting === "user-data"
-                                                    ? "background.default"
-                                                    : "primary.main",
-                                        },
-                                    }}
-                                />
-                            </ListItemButton>
-
-                            <ListItemButton
-                                selected={setting === "account-data"}
-                                href="/user-settings/account-data"
-                            >
-                                <ListItemText
-                                    primary="Dane konta"
-                                    sx={{
-                                        color:
+                                                    ? "#121212"
+                                                    : "#9CA3AF",
+                                            fontWeight:
+                                                setting === "user-data"
+                                                    ? 500
+                                                    : 400,
+                                            "&:hover": {
+                                                backgroundColor:
+                                                    setting === "user-data"
+                                                        ? "#F5C518"
+                                                        : "transparent",
+                                                color:
+                                                    setting === "user-data"
+                                                        ? "#121212"
+                                                        : "#ffffff",
+                                            },
+                                        }}
+                                    >
+                                        Dane użytkownika
+                                    </Button>
+                                    <Button
+                                        variant={
                                             setting === "account-data"
-                                                ? "background.default"
-                                                : "inherit",
-                                        "&:hover": {
+                                                ? "contained"
+                                                : "text"
+                                        }
+                                        startIcon={<CreditCard />}
+                                        href="/user-settings/account-data"
+                                        sx={{
+                                            justifyContent: "flex-start",
+                                            textAlign: "left",
+                                            px: 2,
+                                            py: 1.5,
+                                            backgroundColor:
+                                                setting === "account-data"
+                                                    ? "#F5C518"
+                                                    : "transparent",
                                             color:
                                                 setting === "account-data"
-                                                    ? "background.default"
-                                                    : "primary.main",
-                                        },
-                                    }}
-                                />
-                            </ListItemButton>
-                            <ListItemButton
-                                selected={setting === "preferences"}
-                                href="/user-settings/preferences"
-                            >
-                                <ListItemText
-                                    primary="Preferencje"
-                                    sx={{
-                                        color:
+                                                    ? "#121212"
+                                                    : "#9CA3AF",
+                                            fontWeight:
+                                                setting === "account-data"
+                                                    ? 500
+                                                    : 400,
+                                            "&:hover": {
+                                                backgroundColor:
+                                                    setting === "account-data"
+                                                        ? "#F5C518"
+                                                        : "transparent",
+                                                color:
+                                                    setting === "account-data"
+                                                        ? "#121212"
+                                                        : "#ffffff",
+                                            },
+                                        }}
+                                    >
+                                        Dane konta
+                                    </Button>
+                                    <Button
+                                        variant={
                                             setting === "preferences"
-                                                ? "background.default"
-                                                : "inherit",
-                                        "&:hover": {
+                                                ? "contained"
+                                                : "text"
+                                        }
+                                        startIcon={<Tune />}
+                                        href="/user-settings/preferences"
+                                        sx={{
+                                            justifyContent: "flex-start",
+                                            textAlign: "left",
+                                            px: 2,
+                                            py: 1.5,
+                                            backgroundColor:
+                                                setting === "preferences"
+                                                    ? "#F5C518"
+                                                    : "transparent",
                                             color:
                                                 setting === "preferences"
-                                                    ? "background.default"
-                                                    : "primary.main",
-                                        },
-                                    }}
-                                />
-                            </ListItemButton>
-                        </List>
-                    </CardContent>
-                </Card>
-                <Box sx={{ flexBasis: "65%" }}>
-                    {setting === "user-data" ? (
-                        <UserDataForm
-                            name={settings?.name ?? ""}
-                            lastName={settings?.lastName ?? ""}
-                            birthDate={settings?.birthDate ?? null}
-                            gender={settings?.gender ?? ""}
-                            nationalityId={settings?.nationalityId ?? 0}
-                            cityId={settings?.cityId ?? 0}
-                            cityName={settings?.cityName ?? ""}
-                            nationalitiesList={countries}
-                        />
-                    ) : null}
-                    {setting === "account-data" ? (
-                        <AccountDataForm
-                            username={settings?.username ?? ""}
-                            profileImageId={settings?.profileImageId ?? 0}
-                            profileImageName={settings?.profileImageName ?? ""}
-                            profileImageUrl={settings?.profileImageUrl ?? ""}
-                            backgroundImageId={settings?.backgroundImageId ?? 0}
-                            backgroundImageName={
-                                settings?.backgroundImageName ?? ""
-                            }
-                            backgroundImageUrl={
-                                settings?.backgroundImageUrl ?? ""
-                            }
-                            favouriteSportId={settings?.favouriteSportId ?? 0}
-                            isFavouriteSportIndividual={
-                                settings?.isFavouriteSportIndividual ?? false
-                            }
-                            favouriteTeamId={settings?.favouriteTeamId ?? 0}
-                            favouriteTeamName={
-                                settings?.favouriteTeamName ?? ""
-                            }
-                            primaryColor={settings?.primaryColor ?? ""}
-                            secondaryColor={settings?.secondaryColor ?? ""}
-                            sportsList={sports}
-                        />
-                    ) : null}
-                    {setting === "preferences" ? null : null}
+                                                    ? "#121212"
+                                                    : "#9CA3AF",
+                                            fontWeight:
+                                                setting === "preferences"
+                                                    ? 500
+                                                    : 400,
+                                            "&:hover": {
+                                                backgroundColor:
+                                                    setting === "preferences"
+                                                        ? "#F5C518"
+                                                        : "transparent",
+                                                color:
+                                                    setting === "preferences"
+                                                        ? "#121212"
+                                                        : "#ffffff",
+                                            },
+                                        }}
+                                    >
+                                        Preferencje
+                                    </Button>
+                                </Box>
+                            </CardContent>
+                        </Card>
+                    </Box>
+
+                    {/* Settings Content */}
+                    <Box
+                        sx={{
+                            width: { xs: "100%", lg: "75%" },
+                            flexGrow: 1,
+                        }}
+                    >
+                        {setting === "user-data" ? (
+                            <UserDataForm
+                                name={settings?.name ?? ""}
+                                lastName={settings?.lastName ?? ""}
+                                birthDate={settings?.birthDate ?? null}
+                                gender={settings?.gender ?? ""}
+                                nationalityId={settings?.nationalityId ?? 0}
+                                cityId={settings?.cityId ?? 0}
+                                cityName={settings?.cityName ?? ""}
+                                nationalitiesList={countries}
+                            />
+                        ) : null}
+                        {setting === "account-data" ? (
+                            <AccountDataForm
+                                username={settings?.username ?? ""}
+                                profileImageId={settings?.profileImageId ?? 0}
+                                profileImageName={
+                                    settings?.profileImageName ?? ""
+                                }
+                                profileImageUrl={
+                                    settings?.profileImageUrl ?? ""
+                                }
+                                backgroundImageId={
+                                    settings?.backgroundImageId ?? 0
+                                }
+                                backgroundImageName={
+                                    settings?.backgroundImageName ?? ""
+                                }
+                                backgroundImageUrl={
+                                    settings?.backgroundImageUrl ?? ""
+                                }
+                                favouriteSportId={
+                                    settings?.favouriteSportId ?? 0
+                                }
+                                isFavouriteSportIndividual={
+                                    settings?.isFavouriteSportIndividual ??
+                                    false
+                                }
+                                favouriteTeamId={settings?.favouriteTeamId ?? 0}
+                                favouriteTeamName={
+                                    settings?.favouriteTeamName ?? ""
+                                }
+                                primaryColor={settings?.primaryColor ?? ""}
+                                secondaryColor={settings?.secondaryColor ?? ""}
+                                sportsList={sports}
+                            />
+                        ) : null}
+                        {setting === "preferences" ? <PreferencesForm /> : null}
+                    </Box>
                 </Box>
             </Container>
-        </main>
+        </Box>
     );
 }

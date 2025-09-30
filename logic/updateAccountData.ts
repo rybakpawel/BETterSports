@@ -1,5 +1,4 @@
 import { updateUser } from "@/core/User";
-import { IImage } from "@/core/Image";
 import { createImage, deleteImage } from "@/core/Image";
 import { deleteS3Image } from "@/helpers/deleteS3";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
@@ -36,7 +35,7 @@ export async function updateAccountData(
 
         let newProfileImage;
         if (profileImage.newUrl) {
-            const image: Partial<IImage> = {
+            const image = {
                 name: profileImage.name,
                 url: profileImage.newUrl,
                 createdAt: new Date(),
@@ -58,7 +57,7 @@ export async function updateAccountData(
 
         let newBackgroundImage;
         if (backgroundImage.newUrl) {
-            const image: Partial<IImage> = {
+            const image = {
                 name: backgroundImage.name,
                 url: backgroundImage.newUrl,
                 createdAt: new Date(),
@@ -88,18 +87,26 @@ export async function updateAccountData(
 
         const userUpdates = {
             username: username || "",
-            profileImageId: newProfileImage
-                ? newProfileImage.record.id
-                : profileImage.id || null,
-            backgroundImageId: newBackgroundImage
-                ? newBackgroundImage.record.id
-                : backgroundImage.id || null,
-            favouriteSportId: favouriteSport || null,
-            favouriteTeamId: favouriteTeam || null,
+            profileImage: newProfileImage
+                ? { connect: { id: newProfileImage.id } }
+                : profileImage.id
+                ? { connect: { id: profileImage.id } }
+                : { disconnect: true },
+            backgroundImage: newBackgroundImage
+                ? { connect: { id: newBackgroundImage.id } }
+                : backgroundImage.id
+                ? { connect: { id: backgroundImage.id } }
+                : { disconnect: true },
+            favouriteSport: favouriteSport
+                ? { connect: { id: favouriteSport } }
+                : { disconnect: true },
+            favouriteTeam: favouriteTeam
+                ? { connect: { id: favouriteTeam } }
+                : { disconnect: true },
             primaryColor: primaryColor || null,
             secondaryColor: secondaryColor || null,
             updatedAt: new Date(),
-            updatedById: userId,
+            updatedBy: { connect: { id: userId } },
         };
 
         await updateUser(userId, userUpdates);
@@ -132,7 +139,9 @@ export async function updateAccountData(
             await createLog({
                 level: LogLevel.ERROR,
                 errorType: error.errorType,
-                description: error.message,
+                description:
+                    error.message +
+                    (error.messageLog ? ": " + error.messageLog : ""),
                 location: LOCATION,
                 createdById: userId,
                 updatedById: userId,
@@ -144,7 +153,8 @@ export async function updateAccountData(
             level: LogLevel.ERROR,
             errorType: ErrorType.APP,
             description:
-                "Wewnętrzny błąd serwera podczas aktualizacji danych konta",
+                "Wewnętrzny błąd serwera podczas aktualizacji danych konta: " +
+                error,
             location: LOCATION,
             createdById: userId,
             updatedById: userId,

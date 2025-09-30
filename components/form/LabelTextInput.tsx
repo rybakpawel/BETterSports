@@ -35,86 +35,65 @@ const LabelTextInput: React.FC<ITextInputProps> = ({
     const [showPassword, setShowPassword] = useState<boolean>(false);
 
     return (
-        <Box
-            sx={{
-                mb: 2,
-                minWidth: "10rem",
-            }}
-        >
-            <Box
-                sx={{
-                    display: {
-                        xs: "block",
-                        md: "flex",
-                    },
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                }}
-            >
-                <Box sx={{ mb: { xs: 1, md: 0 }, pr: 3, flexBasis: "25%" }}>
-                    <label htmlFor={inputId}>{label}</label>
-                </Box>
+        <Box sx={{ mb: 1.5 }}>
+            <Box sx={{ mb: 1 }}>
                 <Box
-                    sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        flexBasis: "75%",
-                    }}
+                    component="label"
+                    htmlFor={inputId}
+                    sx={(theme) => ({
+                        color: theme.palette.text.primary,
+                        fontSize: 14,
+                        fontWeight: 500,
+                    })}
                 >
-                    <TextField
-                        id={inputId}
-                        size="small"
-                        type={isPassword && !showPassword ? "password" : "text"}
-                        error={!!errorText}
-                        variant="outlined"
-                        fullWidth
-                        sx={{
-                            flexGrow: 1,
-                            "& .MuiInputBase-root": {
-                                height: "40px",
-                            },
-                        }}
-                        {...textFieldProps}
-                        slotProps={{
-                            input: {
-                                ...textFieldProps?.slotProps?.input,
-                                endAdornment: isPassword ? (
-                                    <InputAdornment position="end">
-                                        <IconButton
-                                            aria-label="toggle password visibility"
-                                            onClick={() => {
-                                                setShowPassword(!showPassword);
-                                            }}
-                                            edge="end"
-                                        >
-                                            {showPassword ? (
-                                                <VisibilityOff />
-                                            ) : (
-                                                <Visibility />
-                                            )}
-                                        </IconButton>
-                                    </InputAdornment>
-                                ) : null,
-                            },
-                        }}
-                    />
-                    {isButton && (
-                        <Button
-                            variant="outlined"
-                            sx={{
-                                ml: 2,
-                                height: "40px",
-                                flexShrink: 0,
-                                maxWidth: "calc(100% - 8px)",
-                            }}
-                        >
-                            {buttonText}
-                        </Button>
-                    )}
+                    {label}
                 </Box>
             </Box>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                <TextField
+                    id={inputId}
+                    type={isPassword && !showPassword ? "password" : "text"}
+                    error={!!errorText}
+                    variant="outlined"
+                    fullWidth
+                    {...textFieldProps}
+                    slotProps={{
+                        input: {
+                            ...textFieldProps?.slotProps?.input,
+                            endAdornment: isPassword ? (
+                                <InputAdornment position="end">
+                                    <IconButton
+                                        aria-label="toggle password visibility"
+                                        onClick={() => {
+                                            setShowPassword(!showPassword);
+                                        }}
+                                        edge="end"
+                                    >
+                                        {showPassword ? (
+                                            <VisibilityOff />
+                                        ) : (
+                                            <Visibility />
+                                        )}
+                                    </IconButton>
+                                </InputAdornment>
+                            ) : null,
+                        },
+                    }}
+                />
+                {isButton && (
+                    <Button
+                        variant="outlined"
+                        sx={{
+                            height: "48px",
+                            flexShrink: 0,
+                        }}
+                    >
+                        {buttonText}
+                    </Button>
+                )}
+            </Box>
             {errorText && (
-                <FormHelperText error sx={{ ml: "25%", minHeight: "20px" }}>
+                <FormHelperText error sx={{ mt: 0.5 }}>
                     {errorText}
                 </FormHelperText>
             )}

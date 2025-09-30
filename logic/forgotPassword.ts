@@ -1,8 +1,5 @@
 import { getUser, getSystemUser } from "@/core/User";
-import {
-    IResetPasswordToken,
-    createResetPasswordToken,
-} from "@/core/ResetPasswordToken";
+import { createResetPasswordToken } from "@/core/ResetPasswordToken";
 import { v4 as uuidv4 } from "uuid";
 import { Resend } from "resend";
 import { ResetPassword } from "@/components/emailTemplates/resetPassword";
@@ -20,12 +17,14 @@ const LOCATION = "app/logic/forgotPassword";
 export async function forgotPassword(
     email: string
 ): Promise<ApiResponse<void>> {
+    const systemUser = await getSystemUser();
+
     try {
         await forgotPasswordServerValidation({ email });
 
         const user = await getUser({ email });
 
-        const resetPasswordToken: Partial<IResetPasswordToken> = {
+        const resetPasswordToken = {
             token: uuidv4(),
             user: {
                 connect: {
@@ -57,11 +56,9 @@ export async function forgotPassword(
             to: [user?.email as string],
             subject: "BETter - nowe hasło",
             react: ResetPassword({
-                resetPasswordToken: newResetPasswordToken?.record.token,
+                resetPasswordToken: newResetPasswordToken?.token,
             }) as React.ReactElement,
         });
-
-        const systemUser = await getSystemUser();
 
         if (error) {
             throw new CoreError(
@@ -84,13 +81,13 @@ export async function forgotPassword(
             "Wysłaliśmy na Twój e-mail link wraz z instrukcją, umożliwiające ustawienie nowego hasła do Twojego konta"
         );
     } catch (error) {
-        const systemUser = await getSystemUser();
-
         if (error instanceof AppError) {
             await createLog({
                 level: LogLevel.ERROR,
                 errorType: error.errorType,
-                description: error.message,
+                description:
+                    error.message +
+                    (error.messageLog ? ": " + error.messageLog : ""),
                 location: LOCATION,
                 createdById: systemUser.id,
                 updatedById: systemUser.id,
@@ -102,7 +99,8 @@ export async function forgotPassword(
             level: LogLevel.ERROR,
             errorType: ErrorType.APP,
             description:
-                "Wewnętrzny błąd serwera podczas wysyłania e-maila z tokenem do zresetowania hasła",
+                "Wewnętrzny błąd serwera podczas wysyłania e-maila z tokenem do zresetowania hasła: " +
+                error,
             location: LOCATION,
             createdById: systemUser.id,
             updatedById: systemUser.id,

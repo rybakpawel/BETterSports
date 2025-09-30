@@ -60,7 +60,9 @@ export async function updateSettingsUserData(
             await createLog({
                 level: LogLevel.ERROR,
                 errorType: error.errorType,
-                description: error.message,
+                description:
+                    error.message +
+                    (error.messageLog ? ": " + error.messageLog : ""),
                 location: LOCATION,
                 createdById: userId,
                 updatedById: userId,
@@ -72,7 +74,8 @@ export async function updateSettingsUserData(
             level: LogLevel.ERROR,
             errorType: ErrorType.APP,
             description:
-                "Wewnętrzny błąd serwera podczas aktualizacji danych użytkownika",
+                "Wewnętrzny błąd serwera podczas aktualizacji danych użytkownika: " +
+                error,
             location: LOCATION,
             createdById: userId,
             updatedById: userId,

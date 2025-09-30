@@ -79,7 +79,9 @@ export async function deleteAccount(): Promise<ApiResponse<void>> {
             await createLog({
                 level: LogLevel.ERROR,
                 errorType: error.errorType,
-                description: error.message,
+                description:
+                    error.message +
+                    (error.messageLog ? ": " + error.messageLog : ""),
                 location: LOCATION,
                 createdById: userId,
                 updatedById: userId,
@@ -90,7 +92,8 @@ export async function deleteAccount(): Promise<ApiResponse<void>> {
         await createLog({
             level: LogLevel.ERROR,
             errorType: ErrorType.APP,
-            description: "Wewnętrzny błąd serwera podczas usuwania konta",
+            description:
+                "Wewnętrzny błąd serwera podczas usuwania konta: " + error,
             location: LOCATION,
             createdById: userId,
             updatedById: userId,

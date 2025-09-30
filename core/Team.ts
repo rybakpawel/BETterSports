@@ -1,28 +1,7 @@
 import prisma from "@/prisma";
+import { Prisma } from "@prisma/client";
 import { CoreError } from "@/helpers/errorAndResponseHandlers";
 
-export interface ITeam {
-    id: number;
-    name: string;
-    coach: number | connect;
-    primaryColor: string | connect;
-    secondaryColor: string | connect;
-    tertiaryColor: string | connect;
-    logo: number | connect;
-    league: number | connect;
-    createdAt: Date;
-    createdBy: number | connect;
-    updatedAt: Date;
-    updatedBy: number | connect;
-}
-
-type connect = {
-    connect: {
-        id: number;
-    };
-};
-
-// 1 usage
 export async function getTeamsByInput(input: string) {
     try {
         const records = await prisma.team.findMany({
@@ -38,34 +17,53 @@ export async function getTeamsByInput(input: string) {
         return records;
     } catch (error) {
         throw new CoreError(
-            "Wystąpił błąd podczas pobierania listy drużyn na podstawie formularza"
+            "Wystąpił błąd podczas pobierania listy drużyn na podstawie formularza",
+            error as string
         );
     }
 }
 
-// ! do użycia przy tworzeniu nowej drużyny w ustawieniach
-export async function createTeam(team: Partial<ITeam>) {
+export async function createTeam(team: Prisma.TeamCreateInput) {
     try {
         const record = await prisma.team.create({
             data: team,
         });
 
-        return { record };
+        return record;
     } catch (error) {
-        console.error(error);
+        throw new CoreError(
+            "Wystąpił błąd podczas tworzenia drużyny",
+            error as string
+        );
     }
 }
 
-export async function getTeamById(teamId: number) {
+export async function getTeam(
+    whereClause: Prisma.TeamWhereInput,
+    includeOptions?: Prisma.TeamInclude
+) {
     try {
-        const record = await prisma.team.findUnique({
-            where: { id: teamId },
+        const record = await prisma.team.findFirst({
+            where: whereClause,
+            include: {
+                coach: includeOptions?.coach ?? false,
+                createdBy: includeOptions?.createdBy ?? false,
+                league: includeOptions?.league ?? false,
+                logo: includeOptions?.logo ?? false,
+                updatedBy: includeOptions?.updatedBy ?? false,
+                athlete: includeOptions?.athlete ?? false,
+                eventTeam1: includeOptions?.eventTeam1 ?? false,
+                eventTeam2: includeOptions?.eventTeam2 ?? false,
+                gadget: includeOptions?.gadget ?? false,
+                user: includeOptions?.user ?? false,
+            },
         });
 
         return record;
     } catch (error) {
         throw new CoreError(
-            "Wystąpił błąd podczas pobierania drużyny na podstawie jej identyfikatora"
+            "Wystąpił błąd podczas pobierania drużyny",
+            error as string
         );
     }
 }

@@ -7,6 +7,9 @@ import {
     Button,
     FormHelperText,
     TextField,
+    ListItem,
+    ListItemButton,
+    ListItemText,
 } from "@mui/material";
 
 interface IDataItem {
@@ -52,75 +55,112 @@ const LabelAutocompleteInput: React.FC<IAutocompleteInputProps> = ({
     onButtonClick,
 }) => {
     return (
-        <Box
-            sx={{
-                mb: 2,
-                minWidth: "10rem",
-            }}
-        >
-            <Box
-                sx={{
-                    display: {
-                        xs: "block",
-                        md: "flex",
-                    },
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                }}
-            >
-                <Box sx={{ mb: { xs: 1, md: 0 }, pr: 3, flexBasis: "25%" }}>
-                    <label htmlFor={inputId}>{label}</label>
-                </Box>
+        <Box sx={{ mb: 1.5 }}>
+            <Box sx={{ mb: 1 }}>
                 <Box
-                    sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        flexBasis: "75%",
-                    }}
+                    component="label"
+                    htmlFor={inputId}
+                    sx={(theme) => ({
+                        color: theme.palette.text.primary,
+                        fontSize: 14,
+                        fontWeight: 500,
+                    })}
                 >
-                    <Autocomplete
-                        disablePortal
-                        id="city"
-                        size="small"
-                        options={dataList}
-                        loading={isLoadingData}
-                        loadingText="Wczytuję..."
-                        noOptionsText="Brak pasujących wyników."
-                        inputValue={inputValue}
-                        value={{ id: defaultId, name: inputValue }}
-                        onChange={onChange}
-                        onInputChange={onInputChange}
-                        getOptionLabel={(option) => option.name}
-                        getOptionKey={(option) => option.id}
-                        isOptionEqualToValue={(option, value) =>
-                            option.id !== value.id
-                        }
-                        renderInput={(params) => (
-                            <TextField {...params} variant="outlined" />
-                        )}
-                        clearOnBlur={true}
-                        sx={{
-                            flexGrow: 1,
-                        }}
-                    />
-                    {isButton && (
-                        <Button
-                            variant="outlined"
-                            sx={{
-                                ml: 2,
-                                height: "40px",
-                                flexShrink: 0,
-                                maxWidth: "calc(100% - 8px)",
-                            }}
-                            onClick={onButtonClick}
-                        >
-                            {buttonText}
-                        </Button>
-                    )}
+                    {label}
                 </Box>
             </Box>
+            <Autocomplete
+                disablePortal
+                id="city"
+                size="small"
+                options={dataList}
+                loading={isLoadingData}
+                loadingText="Wczytuję..."
+                noOptionsText={
+                    <Box>
+                        <ListItem
+                            sx={(theme) => ({
+                                p: 2,
+                                color: theme.palette.text.secondary,
+                                borderTop: "none",
+                            })}
+                        >
+                            <ListItemText primary="Brak pasujących wyników" />
+                        </ListItem>
+                        {isButton && (
+                            <ListItem
+                                sx={(theme) => ({
+                                    borderTop: `1px solid ${theme.palette.grey[600]}`,
+                                    padding: 0,
+                                })}
+                            >
+                                <ListItemButton onClick={onButtonClick}>
+                                    <ListItemText primary={buttonText} />
+                                </ListItemButton>
+                            </ListItem>
+                        )}
+                    </Box>
+                }
+                inputValue={inputValue}
+                value={{ id: defaultId, name: inputValue }}
+                onChange={onChange}
+                onInputChange={onInputChange}
+                getOptionLabel={(option) => option.name}
+                getOptionKey={(option) => option.id}
+                isOptionEqualToValue={(option, value) => option.id !== value.id}
+                renderInput={(params) => (
+                    <TextField
+                        {...params}
+                        variant="outlined"
+                        sx={{
+                            "& .MuiOutlinedInput-root": {
+                                height: "48px",
+                            },
+                        }}
+                    />
+                )}
+                renderOption={(props, option) => (
+                    <ListItem {...props} key={option.id}>
+                        <ListItemText primary={option.name} />
+                    </ListItem>
+                )}
+                slotProps={{
+                    listbox: {
+                        sx: {
+                            paddingBottom: isButton ? "0" : "8px",
+                        },
+                    },
+                    popper: {
+                        sx: {
+                            "& .MuiAutocomplete-listbox": {
+                                paddingBottom: isButton ? "0" : "8px",
+                            },
+                        },
+                    },
+                }}
+                clearOnBlur={true}
+                {...(isButton && {
+                    ListboxComponent: ({ children, ...other }) => (
+                        <Box {...other}>
+                            {children}
+                            {isButton && (
+                                <ListItem
+                                    sx={(theme) => ({
+                                        borderTop: `1px solid ${theme.palette.grey[600]}`,
+                                        padding: 0,
+                                    })}
+                                >
+                                    <ListItemButton onClick={onButtonClick}>
+                                        <ListItemText primary={buttonText} />
+                                    </ListItemButton>
+                                </ListItem>
+                            )}
+                        </Box>
+                    ),
+                })}
+            />
             {errorText && (
-                <FormHelperText error sx={{ ml: "25%", minHeight: "20px" }}>
+                <FormHelperText error sx={{ mt: 0.5 }}>
                     {errorText}
                 </FormHelperText>
             )}

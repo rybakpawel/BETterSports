@@ -47,7 +47,9 @@ export async function getCountries(): Promise<
             await createLog({
                 level: LogLevel.ERROR,
                 errorType: error.errorType,
-                description: error.message,
+                description:
+                    error.message +
+                    (error.messageLog ? ": " + error.messageLog : ""),
                 location: LOCATION,
                 createdById: userId,
                 updatedById: userId,
@@ -60,7 +62,8 @@ export async function getCountries(): Promise<
             level: LogLevel.ERROR,
             errorType: ErrorType.APP,
             description:
-                "Wewnętrzny błąd serwera podczas pobierania wszystkich krajów",
+                "Wewnętrzny błąd serwera podczas pobierania wszystkich krajów: " +
+                error,
             location: LOCATION,
             createdById: userId,
             updatedById: userId,
