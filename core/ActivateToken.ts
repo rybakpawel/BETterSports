@@ -1,14 +1,29 @@
 import prisma from "@/prisma";
 import { Prisma } from "@prisma/client";
 import { CoreError } from "@/helpers/errorAndResponseHandlers";
+import { hashToken } from "@/helpers/hashToken";
+
+type TransactionClient = Omit<
+    typeof prisma,
+    "$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends"
+>;
 
 export async function getActivateToken(
     whereClause: Prisma.ActivateTokenWhereInput,
     includeOptions?: Prisma.ActivateTokenInclude
 ) {
     try {
+        // Jeśli wyszukujemy po tokenie, haszujemy go przed wyszukiwaniem
+        let searchClause = whereClause;
+        if (whereClause.token) {
+            searchClause = {
+                ...whereClause,
+                token: hashToken(whereClause.token as string),
+            };
+        }
+
         const record = await prisma.activateToken.findFirst({
-            where: whereClause,
+            where: searchClause,
             include: {
                 user: includeOptions?.user ?? false,
                 createdBy: includeOptions?.createdBy ?? false,
@@ -26,11 +41,19 @@ export async function getActivateToken(
 }
 
 export async function createActivateToken(
-    activateToken: Prisma.ActivateTokenCreateInput
+    activateToken: Prisma.ActivateTokenCreateInput,
+    tx?: TransactionClient
 ) {
     try {
-        const record = await prisma.activateToken.create({
-            data: activateToken,
+        // Haszujemy token przed zapisaniem do bazy danych
+        const hashedTokenData = {
+            ...activateToken,
+            token: hashToken(activateToken.token as string),
+        };
+
+        const client = tx || prisma;
+        const record = await client.activateToken.create({
+            data: hashedTokenData,
         });
 
         return record;
@@ -44,10 +67,12 @@ export async function createActivateToken(
 
 export async function updateActivateToken(
     id: number,
-    updatedData: Prisma.ActivateTokenUpdateInput
+    updatedData: Prisma.ActivateTokenUpdateInput,
+    tx?: TransactionClient
 ) {
     try {
-        const record = await prisma.activateToken.update({
+        const client = tx || prisma;
+        const record = await client.activateToken.update({
             where: {
                 id,
             },

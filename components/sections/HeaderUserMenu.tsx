@@ -12,6 +12,7 @@ import {
     Tooltip,
     Typography,
 } from "@mui/material";
+import { Person, Settings, Logout } from "@mui/icons-material";
 
 interface IHeaderUserMenuProps {
     userId?: string;
@@ -44,12 +45,18 @@ const HeaderUserMenu: React.FC<IHeaderUserMenuProps> = ({
         {
             name: "Profil",
             href: `${process.env.NEXT_PUBLIC_URL}/user-profile/${userId}`,
+            icon: <Person />,
         },
         {
             name: "Ustawienia",
             href: `${process.env.NEXT_PUBLIC_URL}/user-settings/user-data`,
+            icon: <Settings />,
         },
-        { name: "Wyloguj", href: `` },
+        {
+            name: "Wyloguj",
+            href: ``,
+            icon: <Logout />,
+        },
     ];
 
     return (
@@ -115,6 +122,9 @@ const HeaderUserMenu: React.FC<IHeaderUserMenuProps> = ({
                         sx={(theme) => ({
                             color: theme.palette.text.secondary,
                             backgroundColor: "transparent",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 1.5,
                             "&:hover": {
                                 color: theme.palette.text.primary,
                                 backgroundColor: "transparent",
@@ -129,6 +139,7 @@ const HeaderUserMenu: React.FC<IHeaderUserMenuProps> = ({
                             },
                         })}
                     >
+                        {option.icon}
                         <Typography textAlign="center">
                             {option.name}
                         </Typography>

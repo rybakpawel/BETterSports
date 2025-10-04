@@ -3,7 +3,7 @@ import { getSettingsServerValidation } from "@/validation/server/getSettingsServ
 import { createLog } from "@/core/Log";
 import { ErrorType, LogLevel } from "@prisma/client";
 import { AppError, ApiResponse } from "@/helpers/errorAndResponseHandlers";
-import { UserSettings } from "@/types/user";
+import { UserSettings } from "@/types/UserSettings";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
@@ -27,6 +27,7 @@ export async function getUserSettings(): Promise<
                 favouriteSport: true,
                 favouriteTeam: true,
                 city: true,
+                userPreferences: true,
             }
         );
 
@@ -52,6 +53,20 @@ export async function getUserSettings(): Promise<
             birthDate: user?.person?.birthDate,
             gender: user?.person?.gender,
             nationalityId: user?.person?.nationalityId,
+            showOnlyFavoriteSportContent:
+                user?.userPreferences?.showOnlyFavoriteSportContent,
+            prioritizeNearbyEvents:
+                user?.userPreferences?.prioritizeNearbyEvents,
+            showFriendActivitiesInFeed:
+                user?.userPreferences?.showFriendActivitiesInFeed,
+            pushNewEventsNearby: user?.userPreferences?.pushNewEventsNearby,
+            pushFriendActivities: user?.userPreferences?.pushFriendActivities,
+            pushChallengeUpdates: user?.userPreferences?.pushChallengeUpdates,
+            pushTournamentUpdates: user?.userPreferences?.pushTournamentUpdates,
+            emailEventReminders: user?.userPreferences?.emailEventReminders,
+            emailTournamentReminders:
+                user?.userPreferences?.emailTournamentReminders,
+            emailWeeklyDigest: user?.userPreferences?.emailWeeklyDigest,
         };
 
         await createLog({

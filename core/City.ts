@@ -2,9 +2,18 @@ import prisma from "@/prisma";
 import { Prisma } from "@prisma/client";
 import { CoreError } from "@/helpers/errorAndResponseHandlers";
 
-export async function createCity(city: Prisma.CityCreateInput) {
+type TransactionClient = Omit<
+    typeof prisma,
+    "$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends"
+>;
+
+export async function createCity(
+    city: Prisma.CityCreateInput,
+    tx?: TransactionClient
+) {
     try {
-        const record = await prisma.city.create({
+        const client = tx || prisma;
+        const record = await client.city.create({
             data: city,
         });
 

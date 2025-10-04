@@ -4,7 +4,6 @@ import { ErrorType, LogLevel } from "@prisma/client";
 import { AppError, ApiResponse } from "@/helpers/errorAndResponseHandlers";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import { getCitiesByInputServerValidation } from "@/validation/server/getCitiesByInputServerValidation";
 
 const LOCATION = "app/logic/getCitiesByFormInput";
 
@@ -20,8 +19,6 @@ export async function getCitiesByFormInput(
     const userId = Number(session?.user.id);
 
     try {
-        await getCitiesByInputServerValidation(input);
-
         const cities = await getCitiesByInput(input);
 
         if (!cities)

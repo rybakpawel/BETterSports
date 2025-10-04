@@ -1,5 +1,9 @@
 import { getUser, getSystemUser } from "@/core/User";
-import { getActivateToken } from "@/core/ActivateToken";
+import {
+    getActivateToken,
+    createActivateToken,
+    updateActivateToken,
+} from "@/core/ActivateToken";
 import { Resend } from "resend";
 import { VerifyUser } from "@/components/emailTemplates/vefifyUser";
 import { createLog } from "@/core/Log";
@@ -10,6 +14,7 @@ import {
     CoreError,
     ApiResponse,
 } from "@/helpers/errorAndResponseHandlers";
+import { v4 as uuidv4 } from "uuid";
 
 const LOCATION = "app/logic/resendVerificationEmail";
 
@@ -21,17 +26,49 @@ export async function resendVerificationEmail(
     try {
         await resendVerificationEmailServerValidation(userId);
 
-        const resend = new Resend(process.env.RESEND_API_KEY);
-
         const user = await getUser({ id: userId });
-        const token = await getActivateToken({ userId });
+        const existingToken = await getActivateToken({ userId });
+
+        // Generujemy nowy token dla ponownego wysłania
+        const originalToken = uuidv4();
+
+        const newActivateToken = {
+            token: originalToken,
+            expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+            user: {
+                connect: {
+                    id: userId,
+                },
+            },
+            createdAt: new Date(),
+            createdBy: {
+                connect: {
+                    id: userId,
+                },
+            },
+            updatedAt: new Date(),
+            updatedBy: {
+                connect: {
+                    id: userId,
+                },
+            },
+        };
+
+        // Jeśli istnieje stary token, aktualizujemy go, jeśli nie - tworzymy nowy
+        if (existingToken) {
+            await updateActivateToken(existingToken.id, newActivateToken);
+        } else {
+            await createActivateToken(newActivateToken);
+        }
+
+        const resend = new Resend(process.env.RESEND_API_KEY);
 
         const { error } = await resend.emails.send({
             from: "onboarding@resend.dev", // do skonfigurowania gdy już będzie hosting
             to: [user?.email as string],
             subject: "Weryfikacja konta BETter",
             react: VerifyUser({
-                activateToken: token?.token,
+                activateToken: originalToken, // Wysyłamy oryginalny token, nie zhashowany
             }) as React.ReactElement,
         });
 

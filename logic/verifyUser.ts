@@ -5,6 +5,7 @@ import { createLog } from "@/core/Log";
 import { ErrorType, LogLevel } from "@prisma/client";
 import { AppError, ApiResponse } from "@/helpers/errorAndResponseHandlers";
 import { verifyUserServerValidation } from "@/validation/server/verifyUserServerValidation";
+import prisma from "@/prisma";
 
 const LOCATION = "app/logic/verifyUser";
 
@@ -19,19 +20,27 @@ export async function verifyUser(
         const activateToken = await getActivateToken({ token });
 
         if (activateToken) {
-            const user = {
-                isActive: true,
-                updatedAt: new Date(),
-                updatedBy: { connect: { id: activateToken.userId } },
-            };
-            await updateUser(activateToken.userId, user);
+            await prisma.$transaction(async (tx) => {
+                await updateUser(
+                    activateToken.userId,
+                    {
+                        isActive: true,
+                        updatedAt: new Date(),
+                        updatedBy: { connect: { id: activateToken.userId } },
+                    },
+                    tx
+                );
 
-            const updatedActivateToken = {
-                activatedAt: new Date(),
-                updatedAt: new Date(),
-                updatedBy: { connect: { id: activateToken.userId } },
-            };
-            await updateActivateToken(activateToken.id, updatedActivateToken);
+                await updateActivateToken(
+                    activateToken.id,
+                    {
+                        activatedAt: new Date(),
+                        updatedAt: new Date(),
+                        updatedBy: { connect: { id: activateToken.userId } },
+                    },
+                    tx
+                );
+            });
         }
 
         await createLog({

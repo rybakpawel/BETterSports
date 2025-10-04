@@ -2,6 +2,11 @@ import prisma from "@/prisma";
 import { Prisma } from "@prisma/client";
 import { CoreError } from "@/helpers/errorAndResponseHandlers";
 
+type TransactionClient = Omit<
+    typeof prisma,
+    "$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends"
+>;
+
 export async function getTeamsByInput(input: string) {
     try {
         const records = await prisma.team.findMany({
@@ -23,9 +28,13 @@ export async function getTeamsByInput(input: string) {
     }
 }
 
-export async function createTeam(team: Prisma.TeamCreateInput) {
+export async function createTeam(
+    team: Prisma.TeamCreateInput,
+    tx?: TransactionClient
+) {
     try {
-        const record = await prisma.team.create({
+        const client = tx || prisma;
+        const record = await client.team.create({
             data: team,
         });
 

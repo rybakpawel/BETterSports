@@ -9,4 +9,9 @@ export const verifyResetPasswordServerValidation = async (token: string) => {
 
     if (!resetPasswordToken)
         throw new LogicError("Podany token nie istnieje", 400);
+
+    // Sprawdź czy token nie wygasł
+    if (new Date() > resetPasswordToken.expiresAt) {
+        throw new LogicError("Token resetowania hasła wygasł", 401);
+    }
 };

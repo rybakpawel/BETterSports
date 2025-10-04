@@ -2,9 +2,18 @@ import prisma from "@/prisma";
 import { Prisma } from "@prisma/client";
 import { CoreError } from "@/helpers/errorAndResponseHandlers";
 
-export async function createImage(image: Prisma.ImageCreateInput) {
+type TransactionClient = Omit<
+    typeof prisma,
+    "$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends"
+>;
+
+export async function createImage(
+    image: Prisma.ImageCreateInput,
+    tx?: TransactionClient
+) {
     try {
-        const record = await prisma.image.create({
+        const client = tx || prisma;
+        const record = await client.image.create({
             data: image,
         });
 
@@ -17,9 +26,10 @@ export async function createImage(image: Prisma.ImageCreateInput) {
     }
 }
 
-export async function deleteImage(imageId: number) {
+export async function deleteImage(imageId: number, tx?: TransactionClient) {
     try {
-        await prisma.image.delete({
+        const client = tx || prisma;
+        await client.image.delete({
             where: { id: imageId },
         });
     } catch (error) {

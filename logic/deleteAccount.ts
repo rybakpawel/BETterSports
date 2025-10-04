@@ -7,6 +7,7 @@ import { AppError, ApiResponse } from "@/helpers/errorAndResponseHandlers";
 import { createLog } from "@/core/Log";
 import { ErrorType, LogLevel } from "@prisma/client";
 import { deleteAccountServerValidation } from "@/validation/server/deleteAccountServerValidation";
+import prisma from "@/prisma";
 
 const LOCATION = "app/logic/deleteAccount";
 
@@ -22,47 +23,48 @@ export async function deleteAccount(): Promise<ApiResponse<void>> {
             { person: true, profileImage: true, backgroundImage: true }
         );
 
-        if (user?.profileImage?.id) {
-            deleteImage(user.profileImage.id);
-            await deleteS3Image(user.profileImage.url);
-        }
-        if (user?.backgroundImage?.id) {
-            deleteImage(user.backgroundImage.id);
-            await deleteS3Image(user.backgroundImage.url);
-        }
-
         if (user) {
-            const userUpdates = {
-                email: "",
-                username: "",
-                password: "",
-                profileImageId: null,
-                backgroundImageId: null,
-                favouriteSportId: null,
-                favouriteTeamId: null,
-                cityId: null,
-                primaryColor: "",
-                secondaryColor: "",
-                isActive: false,
-                updatedAt: new Date(),
-                updatedById: Number(session?.user.id),
-            };
+            await prisma.$transaction(async (tx) => {
+                await updateUserAndPersonByUserId(
+                    Number(user.id),
+                    {
+                        email: "",
+                        username: "",
+                        password: "",
+                        profileImage: { disconnect: true },
+                        backgroundImage: { disconnect: true },
+                        favouriteSport: { disconnect: true },
+                        favouriteTeam: { disconnect: true },
+                        city: { disconnect: true },
+                        primaryColor: "",
+                        secondaryColor: "",
+                        isActive: false,
+                        updatedAt: new Date(),
+                        updatedBy: {
+                            connect: { id: Number(session?.user.id) },
+                        },
+                    },
+                    {
+                        name: "",
+                        lastName: "",
+                        birthDate: null,
+                        gender: null,
+                        nationality: { disconnect: true },
+                        updatedAt: new Date(),
+                        updatedBy: { connect: { id: user.person.id } },
+                    },
+                    tx
+                );
+            });
 
-            const personUpdates = {
-                name: "",
-                lastName: "",
-                birthDate: undefined,
-                gender: undefined,
-                nationalityId: null,
-                updatedAt: new Date(),
-                updatedById: user.person.id,
-            };
-
-            await updateUserAndPersonByUserId(
-                Number(user.id),
-                userUpdates,
-                personUpdates
-            );
+            if (user?.profileImage?.id) {
+                deleteImage(user.profileImage.id);
+                await deleteS3Image(user.profileImage.url);
+            }
+            if (user?.backgroundImage?.id) {
+                deleteImage(user.backgroundImage.id);
+                await deleteS3Image(user.backgroundImage.url);
+            }
         }
 
         await createLog({

@@ -1,7 +1,7 @@
 import { z } from "zod";
 import dayjs, { Dayjs } from "dayjs";
 
-export const settingsUserDataValidation = z.object({
+export const userDataValidation = z.object({
     name: z
         .string()
         .max(30, { message: "Imię może zawierać maksymalnie 30 znaków." })
@@ -58,4 +58,4 @@ export const settingsUserDataValidation = z.object({
     city: z.number().optional(),
 });
 
-export type SettingsUserDataType = z.infer<typeof settingsUserDataValidation>;
+export type UserDataType = z.infer<typeof userDataValidation>;

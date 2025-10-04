@@ -11,6 +11,7 @@ model ActivateToken {
   id          Int       @id @default(autoincrement())
   token       String    @unique
   activatedAt DateTime?
+  expiresAt   DateTime
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   userId      Int
@@ -342,6 +343,7 @@ model Person {
 model ResetPasswordToken {
   id          Int      @id @default(autoincrement())
   token       String   @unique
+  expiresAt   DateTime
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   userId      Int

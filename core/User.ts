@@ -2,6 +2,11 @@ import prisma from "@/prisma";
 import { Prisma, Role } from "@prisma/client";
 import { CoreError } from "@/helpers/errorAndResponseHandlers";
 
+type TransactionClient = Omit<
+    typeof prisma,
+    "$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends"
+>;
+
 export async function getUser(
     whereClause: Prisma.UserWhereInput,
     includeOptions?: Prisma.UserInclude
@@ -16,6 +21,7 @@ export async function getUser(
                 favouriteSport: includeOptions?.favouriteSport ?? false,
                 favouriteTeam: includeOptions?.favouriteTeam ?? false,
                 city: includeOptions?.city ?? false,
+                userPreferences: includeOptions?.userPreferences ?? false,
             },
         });
 
@@ -52,26 +58,53 @@ export async function getSystemUser() {
 export async function updateUserAndPersonByUserId(
     userId: number,
     userData: Prisma.UserUpdateInput,
-    personData: Prisma.PersonUpdateInput
+    personData: Prisma.PersonUpdateInput,
+    tx?: TransactionClient
 ) {
     try {
-        const [updatedUser, updatedPerson] = await prisma.$transaction([
-            prisma.user.update({
+        const client = tx || prisma;
+
+        // Jeśli nie ma transakcji, używamy wbudowanej transakcji
+        if (!tx) {
+            const [updatedUser, updatedPerson] = await prisma.$transaction([
+                prisma.user.update({
+                    where: { id: userId },
+                    data: userData,
+                }),
+                prisma.person.update({
+                    where: {
+                        id: (
+                            await prisma.user.findUnique({
+                                where: { id: userId },
+                                select: { personId: true },
+                            })
+                        )?.personId,
+                    },
+                    data: personData,
+                }),
+            ]);
+            return { updatedUser, updatedPerson };
+        }
+
+        // Jeśli jest transakcja, używamy jej
+        const personId = (
+            await client.user.findUnique({
+                where: { id: userId },
+                select: { personId: true },
+            })
+        )?.personId;
+
+        const [updatedUser, updatedPerson] = await Promise.all([
+            client.user.update({
                 where: { id: userId },
                 data: userData,
             }),
-            prisma.person.update({
-                where: {
-                    id: (
-                        await prisma.user.findUnique({
-                            where: { id: userId },
-                            select: { personId: true },
-                        })
-                    )?.personId,
-                },
+            client.person.update({
+                where: { id: personId },
                 data: personData,
             }),
         ]);
+
         return { updatedUser, updatedPerson };
     } catch (error) {
         throw new CoreError(
@@ -81,9 +114,13 @@ export async function updateUserAndPersonByUserId(
     }
 }
 
-export async function createUser(user: Prisma.UserCreateInput) {
+export async function createUser(
+    user: Prisma.UserCreateInput,
+    tx?: TransactionClient
+) {
     try {
-        const record = await prisma.user.create({
+        const client = tx || prisma;
+        const record = await client.user.create({
             data: user,
         });
 
@@ -98,10 +135,12 @@ export async function createUser(user: Prisma.UserCreateInput) {
 
 export async function updateUser(
     id: number,
-    updatedData: Prisma.UserUpdateInput
+    updatedData: Prisma.UserUpdateInput,
+    tx?: TransactionClient
 ) {
     try {
-        const record = await prisma.user.update({
+        const client = tx || prisma;
+        const record = await client.user.update({
             where: {
                 id,
             },

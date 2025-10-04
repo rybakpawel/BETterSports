@@ -1,9 +1,9 @@
-import { getSystemUser, updateUserAndPersonByUserId } from "@/core/User";
+import { updateUserAndPersonByUserId } from "@/core/User";
 import { AppError, ApiResponse } from "@/helpers/errorAndResponseHandlers";
 import { createLog } from "@/core/Log";
 import { ErrorType, LogLevel, Gender } from "@prisma/client";
-import { SettingsUserDataType } from "@/validation/common/settingsUserDataValidation";
-import { settingsUserDataServerValidation } from "@/validation/server/settingsUserDataServerValidation";
+import { UserDataType } from "@/validation/common/updateUserDataValidation";
+import { settingsUserDataServerValidation } from "@/validation/server/updateUserDataServerValidation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import dayjs from "dayjs";
@@ -11,7 +11,7 @@ import dayjs from "dayjs";
 const LOCATION = "app/logic/updateSettingsUserData";
 
 export async function updateSettingsUserData(
-    settingsUserData: SettingsUserDataType
+    settingsUserData: UserDataType
 ): Promise<ApiResponse<void>> {
     const session = await getServerSession(authOptions);
     const userId = Number(session?.user.id);

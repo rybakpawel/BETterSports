@@ -24,8 +24,11 @@ export async function forgotPassword(
 
         const user = await getUser({ email });
 
+        const originalToken = uuidv4();
+
         const resetPasswordToken = {
-            token: uuidv4(),
+            token: originalToken,
+            expiresAt: new Date(Date.now() + 60 * 60 * 1000), // 1 godzina od teraz
             user: {
                 connect: {
                     id: user?.id as number,
@@ -45,9 +48,7 @@ export async function forgotPassword(
             },
         };
 
-        const newResetPasswordToken = await createResetPasswordToken(
-            resetPasswordToken
-        );
+        await createResetPasswordToken(resetPasswordToken);
 
         const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -56,7 +57,7 @@ export async function forgotPassword(
             to: [user?.email as string],
             subject: "BETter - nowe hasło",
             react: ResetPassword({
-                resetPasswordToken: newResetPasswordToken?.token,
+                resetPasswordToken: originalToken, // Wysyłamy oryginalny token, nie zhashowany
             }) as React.ReactElement,
         });
 

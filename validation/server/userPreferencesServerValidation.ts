@@ -1,15 +1,15 @@
 import { getUser } from "@/core/User";
 import {
-    settingsUserDataValidation,
-    SettingsUserDataType,
-} from "../common/settingsUserDataValidation";
+    userPreferencesValidation,
+    UserPreferencesType,
+} from "../common/userPreferencesValidation";
 import { LogicError } from "@/helpers/errorAndResponseHandlers";
 
-export const settingsUserDataServerValidation = async (
-    data: SettingsUserDataType,
+export const userPreferencesServerValidation = async (
+    data: UserPreferencesType,
     userId: number
 ) => {
-    const result = settingsUserDataValidation.safeParse(data);
+    const result = userPreferencesValidation.safeParse(data);
 
     if (!result.success) {
         const validationErrors = result.error.issues.map((issue) => ({

@@ -9,7 +9,7 @@ import {
 import { Settings, Person, CreditCard, Tune } from "@mui/icons-material";
 import UserDataForm from "@/components/sections/UserDataForm";
 import AccountDataForm from "@/components/sections/AccountDataForm";
-import PreferencesForm from "@/components/sections/PreferencesForm";
+import UserPreferencesForm from "@/components/sections/UserPreferencesForm";
 import { getUserSettings } from "@/logic/getUserSettings";
 import { getSports } from "@/logic/getSports";
 import { getCountries } from "@/logic/getCountries";
@@ -293,7 +293,42 @@ export default async function UserSettings({
                                 sportsList={sports}
                             />
                         ) : null}
-                        {setting === "preferences" ? <PreferencesForm /> : null}
+                        {setting === "preferences" ? (
+                            <UserPreferencesForm
+                                showOnlyFavoriteSportContent={
+                                    settings?.showOnlyFavoriteSportContent ??
+                                    false
+                                }
+                                prioritizeNearbyEvents={
+                                    settings?.prioritizeNearbyEvents ?? false
+                                }
+                                showFriendActivitiesInFeed={
+                                    settings?.showFriendActivitiesInFeed ??
+                                    false
+                                }
+                                pushNewEventsNearby={
+                                    settings?.pushNewEventsNearby ?? false
+                                }
+                                pushFriendActivities={
+                                    settings?.pushFriendActivities ?? false
+                                }
+                                pushChallengeUpdates={
+                                    settings?.pushChallengeUpdates ?? false
+                                }
+                                pushTournamentUpdates={
+                                    settings?.pushTournamentUpdates ?? false
+                                }
+                                emailEventReminders={
+                                    settings?.emailEventReminders ?? false
+                                }
+                                emailTournamentReminders={
+                                    settings?.emailTournamentReminders ?? false
+                                }
+                                emailWeeklyDigest={
+                                    settings?.emailWeeklyDigest ?? false
+                                }
+                            />
+                        ) : null}
                     </Box>
                 </Box>
             </Container>

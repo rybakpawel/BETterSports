@@ -24,9 +24,9 @@ import ApiResponseAlert, {
     ApiResponse,
 } from "@/components/alerts/ApiResponseAlert";
 import {
-    settingsUserDataValidation,
-    SettingsUserDataType,
-} from "@/validation/common/settingsUserDataValidation";
+    userDataValidation,
+    UserDataType,
+} from "@/validation/common/updateUserDataValidation";
 import {
     createCityValidation,
     CreateCityType,
@@ -66,8 +66,8 @@ const UserDataForm: React.FC<IUserDataFormProps> = ({
         control: userDataControl,
         handleSubmit: handleSubmitUserData,
         formState: { errors: userDataFormErrors },
-    } = useForm<SettingsUserDataType>({
-        resolver: zodResolver(settingsUserDataValidation),
+    } = useForm<UserDataType>({
+        resolver: zodResolver(userDataValidation),
         defaultValues: {
             name,
             lastName,
@@ -126,7 +126,7 @@ const UserDataForm: React.FC<IUserDataFormProps> = ({
         fetchData();
     }, [cityInput]);
 
-    const handleSubmitUserDataForm = async (data: SettingsUserDataType) => {
+    const handleSubmitUserDataForm = async (data: UserDataType) => {
         setIsLoading(true);
 
         const { name, lastName, birthDate, gender, nationality, city } = data;
@@ -141,7 +141,7 @@ const UserDataForm: React.FC<IUserDataFormProps> = ({
         };
 
         const response = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/update-settings-user-data`,
+            `${process.env.NEXT_PUBLIC_API_URL}/update-user-data`,
             {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },

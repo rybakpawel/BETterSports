@@ -1,7 +1,7 @@
 import {
     accountDataValidation,
     AccountDataType,
-} from "../common/accountDataValidation";
+} from "../common/updateAccountDataValidation";
 import { LogicError } from "@/helpers/errorAndResponseHandlers";
 import { getUser } from "@/core/User";
 import { getSport } from "@/core/Sport";

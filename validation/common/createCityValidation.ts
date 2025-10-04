@@ -3,8 +3,8 @@ import { z } from "zod";
 export const createCityValidation = z.object({
     country: z
         .number({ required_error: "Brak kraju, w którym leży miasto" })
-        .int({ message: "ID kraju musi być liczbą całkowitą" })
-        .positive({ message: "ID kraju musi być liczbą dodatnią" }),
+        .positive({ message: "Brak kraju, w którym leży miasto" })
+        .int({ message: "ID kraju musi być liczbą całkowitą" }),
     name: z
         .string({ required_error: "Brak nazwy miasta" })
         .min(1, { message: "Brak nazwy miasta" })

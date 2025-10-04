@@ -2,6 +2,11 @@ import prisma from "@/prisma";
 import { Prisma } from "@prisma/client";
 import { CoreError } from "@/helpers/errorAndResponseHandlers";
 
+type TransactionClient = Omit<
+    typeof prisma,
+    "$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends"
+>;
+
 export async function getUserPreferences(
     whereClause: Prisma.UserPreferencesWhereInput,
     includeOptions?: Prisma.UserPreferencesInclude
@@ -26,10 +31,12 @@ export async function getUserPreferences(
 }
 
 export async function createUserPreferences(
-    preferences: Prisma.UserPreferencesCreateInput
+    preferences: Prisma.UserPreferencesCreateInput,
+    tx?: TransactionClient
 ) {
     try {
-        const record = await prisma.userPreferences.create({
+        const client = tx || prisma;
+        const record = await client.userPreferences.create({
             data: preferences,
         });
 
@@ -44,10 +51,12 @@ export async function createUserPreferences(
 
 export async function updateUserPreferences(
     id: number,
-    updatedData: Prisma.UserPreferencesUpdateInput
+    updatedData: Prisma.UserPreferencesUpdateInput,
+    tx?: TransactionClient
 ) {
     try {
-        const record = await prisma.userPreferences.update({
+        const client = tx || prisma;
+        const record = await client.userPreferences.update({
             where: { id },
             data: updatedData,
         });

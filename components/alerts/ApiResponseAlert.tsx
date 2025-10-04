@@ -48,6 +48,12 @@ export default function ApiResponseAlert({
                         width: "100%",
                         fontWeight: 500,
                         alignItems: "center",
+                        color: "white",
+                        "& .MuiAlert-icon": {
+                            color: "white",
+                            display: "flex",
+                            alignItems: "center",
+                        },
                     }}
                     action={
                         <IconButton
@@ -55,6 +61,11 @@ export default function ApiResponseAlert({
                             color="inherit"
                             size="small"
                             onClick={onClose}
+                            sx={{
+                                color: "white",
+                                display: "flex",
+                                alignItems: "center",
+                            }}
                         >
                             <CloseIcon fontSize="inherit" />
                         </IconButton>

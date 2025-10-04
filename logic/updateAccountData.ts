@@ -3,12 +3,12 @@ import { createImage, deleteImage } from "@/core/Image";
 import { deleteS3Image } from "@/helpers/deleteS3";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { getServerSession } from "next-auth";
-import { getSystemUser } from "@/core/User";
 import { AppError, ApiResponse } from "@/helpers/errorAndResponseHandlers";
 import { createLog } from "@/core/Log";
 import { ErrorType, LogLevel } from "@prisma/client";
-import { AccountDataType } from "@/validation/common/accountDataValidation";
-import { accountDataServerValidation } from "@/validation/server/accountDataServerValidation";
+import { AccountDataType } from "@/validation/common/updateAccountDataValidation";
+import { accountDataServerValidation } from "@/validation/server/updateAccountDataServerValidation";
+import prisma from "@/prisma";
 
 const LOCATION = "app/logic/updateAccountData";
 
@@ -33,50 +33,6 @@ export async function updateAccountData(
     try {
         await accountDataServerValidation(accountData, userId);
 
-        let newProfileImage;
-        if (profileImage.newUrl) {
-            const image = {
-                name: profileImage.name,
-                url: profileImage.newUrl,
-                createdAt: new Date(),
-                createdBy: {
-                    connect: {
-                        id: userId,
-                    },
-                },
-                updatedAt: new Date(),
-                updatedBy: {
-                    connect: {
-                        id: userId,
-                    },
-                },
-            };
-
-            newProfileImage = await createImage(image);
-        }
-
-        let newBackgroundImage;
-        if (backgroundImage.newUrl) {
-            const image = {
-                name: backgroundImage.name,
-                url: backgroundImage.newUrl,
-                createdAt: new Date(),
-                createdBy: {
-                    connect: {
-                        id: userId,
-                    },
-                },
-                updatedAt: new Date(),
-                updatedBy: {
-                    connect: {
-                        id: userId,
-                    },
-                },
-            };
-
-            newBackgroundImage = await createImage(image);
-        }
-
         const {
             username,
             favouriteSport,
@@ -85,38 +41,89 @@ export async function updateAccountData(
             secondaryColor,
         } = accountData;
 
-        const userUpdates = {
-            username: username || "",
-            profileImage: newProfileImage
-                ? { connect: { id: newProfileImage.id } }
-                : profileImage.id
-                ? { connect: { id: profileImage.id } }
-                : { disconnect: true },
-            backgroundImage: newBackgroundImage
-                ? { connect: { id: newBackgroundImage.id } }
-                : backgroundImage.id
-                ? { connect: { id: backgroundImage.id } }
-                : { disconnect: true },
-            favouriteSport: favouriteSport
-                ? { connect: { id: favouriteSport } }
-                : { disconnect: true },
-            favouriteTeam: favouriteTeam
-                ? { connect: { id: favouriteTeam } }
-                : { disconnect: true },
-            primaryColor: primaryColor || null,
-            secondaryColor: secondaryColor || null,
-            updatedAt: new Date(),
-            updatedBy: { connect: { id: userId } },
-        };
+        await prisma.$transaction(async (tx) => {
+            let newProfileImage;
+            if (profileImage.newUrl) {
+                const image = {
+                    name: profileImage.name,
+                    url: profileImage.newUrl,
+                    createdAt: new Date(),
+                    createdBy: {
+                        connect: {
+                            id: userId,
+                        },
+                    },
+                    updatedAt: new Date(),
+                    updatedBy: {
+                        connect: {
+                            id: userId,
+                        },
+                    },
+                };
 
-        await updateUser(userId, userUpdates);
+                newProfileImage = await createImage(image, tx);
+            }
+
+            let newBackgroundImage;
+            if (backgroundImage.newUrl) {
+                const image = {
+                    name: backgroundImage.name,
+                    url: backgroundImage.newUrl,
+                    createdAt: new Date(),
+                    createdBy: {
+                        connect: {
+                            id: userId,
+                        },
+                    },
+                    updatedAt: new Date(),
+                    updatedBy: {
+                        connect: {
+                            id: userId,
+                        },
+                    },
+                };
+
+                newBackgroundImage = await createImage(image, tx);
+            }
+
+            const userUpdates = {
+                username: username || "",
+                profileImage: newProfileImage
+                    ? { connect: { id: newProfileImage.id } }
+                    : profileImage.id
+                    ? { connect: { id: profileImage.id } }
+                    : { disconnect: true },
+                backgroundImage: newBackgroundImage
+                    ? { connect: { id: newBackgroundImage.id } }
+                    : backgroundImage.id
+                    ? { connect: { id: backgroundImage.id } }
+                    : { disconnect: true },
+                favouriteSport: favouriteSport
+                    ? { connect: { id: favouriteSport } }
+                    : { disconnect: true },
+                favouriteTeam: favouriteTeam
+                    ? { connect: { id: favouriteTeam } }
+                    : { disconnect: true },
+                primaryColor: primaryColor || null,
+                secondaryColor: secondaryColor || null,
+                updatedAt: new Date(),
+                updatedBy: { connect: { id: userId } },
+            };
+
+            await updateUser(userId, userUpdates, tx);
+
+            if (profileImage.newUrl && profileImage.id) {
+                await deleteImage(profileImage.id, tx);
+            }
+            if (backgroundImage.newUrl && backgroundImage.id) {
+                await deleteImage(backgroundImage.id, tx);
+            }
+        });
 
         if (profileImage.newUrl && profileImage.id) {
-            deleteImage(profileImage.id);
             await deleteS3Image(profileImage.url);
         }
         if (backgroundImage.newUrl && backgroundImage.id) {
-            deleteImage(backgroundImage.id);
             await deleteS3Image(backgroundImage.url);
         }
 

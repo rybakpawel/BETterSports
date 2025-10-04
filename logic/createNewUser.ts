@@ -14,6 +14,7 @@ import {
 import { createLog } from "@/core/Log";
 import { ErrorType, LogLevel } from "@prisma/client";
 import { CreateUserType } from "@/validation/common/createUserValidation";
+import prisma from "@/prisma";
 
 const LOCATION = "app/logic/createNewUser";
 
@@ -26,74 +27,83 @@ export async function createNewUser(
         await createUserServerValidation(userData);
 
         const hashedPassword = await hash(userData.password, 10);
+        const originalToken = uuidv4();
 
-        const user = {
-            email: userData.email,
-            username: userData.username,
-            password: hashedPassword,
-            person: {
-                create: {},
-            },
-            isActive: false,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-        };
+        const result = await prisma.$transaction(async (tx) => {
+            const newUser = await createUser(
+                {
+                    email: userData.email,
+                    username: userData.username,
+                    password: hashedPassword,
+                    person: {
+                        create: {},
+                    },
+                    isActive: false,
+                    createdAt: new Date(),
+                    updatedAt: new Date(),
+                },
+                tx
+            );
 
-        const newUser = await createUser(user);
+            await createUserPreferences(
+                {
+                    user: {
+                        connect: {
+                            id: newUser.id,
+                        },
+                    },
+                    createdAt: new Date(),
+                    createdBy: {
+                        connect: {
+                            id: newUser.id,
+                        },
+                    },
+                    updatedAt: new Date(),
+                    updatedBy: {
+                        connect: {
+                            id: newUser.id,
+                        },
+                    },
+                },
+                tx
+            );
 
-        const userPreferences = {
-            user: {
-                connect: {
-                    id: newUser.id,
+            await createActivateToken(
+                {
+                    token: originalToken, // Przekazujemy oryginalny token, haszowanie w core
+                    expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+                    user: {
+                        connect: {
+                            id: newUser.id,
+                        },
+                    },
+                    createdAt: new Date(),
+                    createdBy: {
+                        connect: {
+                            id: newUser.id,
+                        },
+                    },
+                    updatedAt: new Date(),
+                    updatedBy: {
+                        connect: {
+                            id: newUser.id,
+                        },
+                    },
                 },
-            },
-            createdAt: new Date(),
-            createdBy: {
-                connect: {
-                    id: newUser.id,
-                },
-            },
-            updatedAt: new Date(),
-            updatedBy: {
-                connect: {
-                    id: newUser.id,
-                },
-            },
-        };
+                tx
+            );
 
-        await createUserPreferences(userPreferences);
-
-        const activateToken = {
-            token: uuidv4(),
-            user: {
-                connect: {
-                    id: newUser.id,
-                },
-            },
-            createdAt: new Date(),
-            createdBy: {
-                connect: {
-                    id: newUser.id,
-                },
-            },
-            updatedAt: new Date(),
-            updatedBy: {
-                connect: {
-                    id: newUser.id,
-                },
-            },
-        };
-
-        const newToken = await createActivateToken(activateToken);
+            return newUser;
+        });
 
         const resend = new Resend(process.env.RESEND_API_KEY);
 
         const { error } = await resend.emails.send({
             from: "onboarding@resend.dev", // TODO do skonfigurowania gdy już będzie hosting
-            to: [newUser?.email as string],
+            to: [userData.email],
             subject: "Weryfikacja konta BETter",
             react: VerifyUser({
-                activateToken: newToken?.token,
+                activateToken: originalToken, // Wysyłamy oryginalny token, nie zhashowany
             }) as React.ReactElement,
         });
 
@@ -113,7 +123,7 @@ export async function createNewUser(
         });
 
         return new ApiResponse(true, 200, "Nowy użytkownik został utworzony", {
-            userId: newUser.id,
+            userId: result.id,
         });
     } catch (error) {
         if (error instanceof AppError) {

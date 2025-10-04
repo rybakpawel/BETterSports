@@ -30,7 +30,7 @@ import ApiResponseAlert, {
 import {
     accountDataValidation,
     AccountDataType,
-} from "@/validation/common/accountDataValidation";
+} from "@/validation/common/updateAccountDataValidation";
 import {
     changePasswordValidation,
     ChangePasswordType,

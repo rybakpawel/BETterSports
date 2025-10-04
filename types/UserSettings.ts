@@ -20,4 +20,15 @@ export type UserSettings = {
     birthDate?: Date | null;
     gender?: string | null;
     nationalityId?: number | null;
+    // User Preferences
+    showOnlyFavoriteSportContent?: boolean;
+    prioritizeNearbyEvents?: boolean;
+    showFriendActivitiesInFeed?: boolean;
+    pushNewEventsNearby?: boolean;
+    pushFriendActivities?: boolean;
+    pushChallengeUpdates?: boolean;
+    pushTournamentUpdates?: boolean;
+    emailEventReminders?: boolean;
+    emailTournamentReminders?: boolean;
+    emailWeeklyDigest?: boolean;
 };
